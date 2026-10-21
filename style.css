@@ -1,0 +1,1155 @@
+/* ==========================================================================
+   TECNO SYSTEM - QUADRO KANBAN (HUB DE DEMANDAS)
+   Design System & Estilização Corporativa
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. RESET UNIVERSAL & VARIÁVEIS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Paleta Primária & Fundo */
+  --bg-gradient: radial-gradient(circle at 10% 20%, #f9fbfd 0%, #edf2f7 50%, #e2e8f0 100%);
+  --surface-white: #ffffff;
+  --surface-ice: #f1f5f9;
+  --surface-hover: #e2e8f0;
+  --border-subtle: #e2e8f0;
+  --border-hover: #cbd5e1;
+
+  /* Cores Corporativas */
+  --brand-primary: #1e3a8a;       /* Azul marinho corporativo */
+  --brand-accent: #2563eb;        /* Azul vibrante */
+  --brand-accent-hover: #1d4ed8;
+  --brand-dark: #0f172a;          /* Slate 900 */
+  --brand-muted: #64748b;         /* Slate 500 */
+  --brand-light: #94a3b8;         /* Slate 400 */
+
+  /* Cores das Colunas (data-id) */
+  --col-backlog: #f43f5e;         /* 1: Rosada / Rosa moderno */
+  --col-priorizado: #ea580c;      /* 2: Laranja escuro corporativo */
+  --col-desenvolvimento: #eab308; /* 3: Amarelo ouro */
+  --col-teste: #2563eb;           /* 4: Azul royal */
+  --col-finalizado: #10b981;      /* 5: Verde esmeralda */
+
+  /* Badges de Prioridade */
+  --badge-low-bg: #dcfce7;
+  --badge-low-text: #15803d;
+  --badge-med-bg: #ffedd5;
+  --badge-med-text: #c2410c;
+  --badge-high-bg: #fee2e2;
+  --badge-high-text: #b91c1c;
+
+  /* Badges de Departamento */
+  --dept-ti-bg: #e0e7ff;
+  --dept-ti-text: #3730a3;
+  --dept-rh-bg: #f3e8ff;
+  --dept-rh-text: #6b21a8;
+  --dept-fin-bg: #d1fae5;
+  --dept-fin-text: #065f46;
+  --dept-ops-bg: #e0f2fe;
+  --dept-ops-text: #0369a1;
+
+  /* Sombras & Efeitos */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 8px 18px rgba(15, 23, 42, 0.1), 0 3px 6px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0 20px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15);
+
+  /* Transições & Raios */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--brand-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------------------
+   2. SCROLLBAR CUSTOMIZADA
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.6);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: var(--radius-pill);
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   3. CABEÇALHO CORPORATIVO
+   -------------------------------------------------------------------------- */
+.app-header {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 0.85rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  transition: transform var(--transition-normal);
+}
+
+.brand-logo:hover {
+  transform: rotate(5deg) scale(1.05);
+}
+
+.brand-info h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  font-weight: 500;
+  color: var(--brand-accent);
+}
+
+.brand-desc {
+  font-size: 0.78rem;
+  color: var(--brand-muted);
+  font-weight: 400;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.meta-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.meta-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brand-muted);
+  font-weight: 600;
+}
+
+.meta-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--brand-accent);
+  line-height: 1;
+}
+
+.meta-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--border-subtle);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid #ffffff;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--brand-dark);
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 0.72rem;
+  color: #10b981;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.user-role::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   4. BARRA DE CADASTRO DE TAREFAS (CREATE)
+   -------------------------------------------------------------------------- */
+.task-creation-bar {
+  background: var(--surface-white);
+  margin: 1rem 1.75rem 0.65rem 1.75rem;
+  padding: 0.95rem 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.create-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 140px;
+}
+
+.form-group-title {
+  flex: 3 1 280px;
+}
+
+.form-group label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--brand-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.form-group label i {
+  color: var(--brand-accent);
+  font-size: 0.85rem;
+}
+
+.create-form input[type="text"],
+.create-form select,
+.modal-form input[type="text"],
+.modal-form select {
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 0.58rem 0.85rem;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: #f8fafc;
+  color: var(--brand-dark);
+  outline: none;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.create-form input[type="text"]:focus,
+.create-form select:focus,
+.modal-form input[type="text"]:focus,
+.modal-form select:focus {
+  background-color: var(--surface-white);
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Botões Globais */
+.btn-primary {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border: none;
+  padding: 0.62rem 1.35rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background-color: #f1f5f9;
+  color: var(--brand-muted);
+  border: 1px solid var(--border-subtle);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+  color: var(--brand-dark);
+}
+
+.btn-danger {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  border: none;
+  padding: 0.62rem 1.35rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   5. BARRA DE FERRAMENTAS & FILTROS
+   -------------------------------------------------------------------------- */
+.kanban-toolbar {
+  margin: 0.35rem 1.75rem 0.85rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  flex: 1 1 280px;
+  max-width: 440px;
+}
+
+.search-box i.fa-magnifying-glass {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--brand-light);
+  font-size: 0.85rem;
+}
+
+.search-box input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.84rem;
+  padding: 0.5rem 2.2rem 0.5rem 2.2rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  outline: none;
+  color: var(--brand-dark);
+  transition: all var(--transition-fast);
+}
+
+.search-box input:focus {
+  background: var(--surface-white);
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--brand-light);
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 0.85rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-search-btn:hover {
+  color: var(--brand-dark);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-muted);
+  margin-right: 0.2rem;
+}
+
+.filter-pill {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.32rem 0.75rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--brand-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-pill:hover {
+  background: var(--surface-white);
+  color: var(--brand-dark);
+  border-color: var(--border-hover);
+}
+
+.filter-pill.active {
+  background: var(--brand-dark);
+  color: #ffffff;
+  border-color: var(--brand-dark);
+}
+
+/* --------------------------------------------------------------------------
+   6. CONTAINER PRINCIPAL DO KANBAN & COLUNAS
+   -------------------------------------------------------------------------- */
+.kanban {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0 1.75rem 1.5rem 1.75rem;
+  overflow-x: auto;
+  height: 85vh;
+  align-items: flex-start;
+  flex: 1;
+}
+
+/* Coluna Individual */
+.kanban-column {
+  position: relative;
+  min-width: 280px;
+  max-width: 340px;
+  flex: 1 0 280px;
+  background-color: var(--surface-ice);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* Linha colorida superior distintiva baseada no 'data-id' via seletor '::after' */
+.kanban-column::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 2;
+}
+
+.kanban-column[data-id="1"]::after {
+  background: var(--col-backlog);
+}
+
+.kanban-column[data-id="2"]::after {
+  background: var(--col-priorizado);
+}
+
+.kanban-column[data-id="3"]::after {
+  background: var(--col-desenvolvimento);
+}
+
+.kanban-column[data-id="4"]::after {
+  background: var(--col-teste);
+}
+
+.kanban-column[data-id="5"]::after {
+  background: var(--col-finalizado);
+}
+
+/* Cabeçalho da Coluna */
+.column-header {
+  padding: 1.15rem 1.1rem 0.85rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.column-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.column-icon {
+  font-size: 0.95rem;
+}
+
+.kanban-column[data-id="1"] .column-icon { color: var(--col-backlog); }
+.kanban-column[data-id="2"] .column-icon { color: var(--col-priorizado); }
+.kanban-column[data-id="3"] .column-icon { color: var(--col-desenvolvimento); }
+.kanban-column[data-id="4"] .column-icon { color: var(--col-teste); }
+.kanban-column[data-id="5"] .column-icon { color: var(--col-finalizado); }
+
+.column-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
+.column-count {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--brand-muted);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container de Cartões da Coluna */
+.kanban-cards {
+  padding: 0.85rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 140px;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* Estado de Dragover na coluna (.cards-hover) */
+.kanban-cards.cards-hover {
+  background-color: rgba(37, 99, 235, 0.08);
+  outline: 2px dashed rgba(37, 99, 235, 0.45);
+  outline-offset: -3px;
+}
+
+/* Mensagem de coluna vazia */
+.empty-column-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.2rem 1rem;
+  color: var(--brand-light);
+  font-size: 0.78rem;
+  text-align: center;
+  gap: 0.4rem;
+  border: 1.5px dashed rgba(203, 213, 225, 0.6);
+  border-radius: var(--radius-md);
+  margin-top: 0.25rem;
+}
+
+.empty-column-msg i {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+/* --------------------------------------------------------------------------
+   7. CARTÕES KANBAN (CARDS FÍSICOS)
+   -------------------------------------------------------------------------- */
+.kanban-card {
+  background-color: var(--surface-white);
+  border-radius: var(--radius-md);
+  padding: 0.95rem 1rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  cursor: grab;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  user-select: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), border-color var(--transition-fast);
+}
+
+.kanban-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+/* Estado Arrastando (.dragging) */
+.kanban-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.97);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.25);
+  border: 2px dashed var(--brand-accent);
+  cursor: grabbing !important;
+}
+
+/* Cabeçalho do Cartão (Badges) */
+.card-header-tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* Badges de Prioridade */
+.badge-priority {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge-low {
+  background-color: var(--badge-low-bg);
+  color: var(--badge-low-text);
+}
+
+.badge-medium {
+  background-color: var(--badge-med-bg);
+  color: var(--badge-med-text);
+}
+
+.badge-high {
+  background-color: var(--badge-high-bg);
+  color: var(--badge-high-text);
+}
+
+/* Badges de Departamento */
+.badge-dept {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.02em;
+}
+
+.badge-dept-ti {
+  background-color: var(--dept-ti-bg);
+  color: var(--dept-ti-text);
+}
+
+.badge-dept-rh {
+  background-color: var(--dept-rh-bg);
+  color: var(--dept-rh-text);
+}
+
+.badge-dept-fin {
+  background-color: var(--dept-fin-bg);
+  color: var(--dept-fin-text);
+}
+
+.badge-dept-ops {
+  background-color: var(--dept-ops-bg);
+  color: var(--dept-ops-text);
+}
+
+/* Ação rápida de Edição no canto superior */
+.card-edit-hint {
+  font-size: 0.72rem;
+  color: var(--brand-light);
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+  opacity: 0;
+}
+
+.kanban-card:hover .card-edit-hint {
+  opacity: 1;
+}
+
+.card-edit-hint:hover {
+  color: var(--brand-accent);
+  background-color: #f1f5f9;
+}
+
+/* Corpo do Cartão (Título/Descrição) */
+.card-body {
+  cursor: pointer;
+}
+
+.card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--brand-dark);
+  line-height: 1.4;
+  word-break: break-word;
+  transition: color var(--transition-fast);
+}
+
+.card-body:hover .card-title {
+  color: var(--brand-accent);
+}
+
+/* Rodapé do Cartão com Flexbox */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.65rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Lado Esquerdo do Rodapé (Comentários e Anexos) */
+.card-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--brand-muted);
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+.card-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: default;
+}
+
+.card-metric i {
+  font-size: 0.78rem;
+  color: var(--brand-light);
+}
+
+/* Lado Direito do Rodapé (Avatar 36x36px e Botão Exclusão) */
+.card-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.card-avatar {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border: 2px solid #ffffff;
+}
+
+/* Botão Discreto de Exclusão */
+.card-delete-btn {
+  background: none;
+  border: none;
+  color: var(--brand-light);
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-delete-btn:hover {
+  color: #ef4444;
+  background-color: #fee2e2;
+  transform: scale(1.1);
+}
+
+/* --------------------------------------------------------------------------
+   8. MODAIS (UPDATE & DELETE)
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-container {
+  background: var(--surface-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  width: 100%;
+  max-width: 520px;
+  padding: 1.6rem 1.85rem;
+  transform: translateY(18px) scale(0.97);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-subtle);
+}
+
+.modal-backdrop.active .modal-container {
+  transform: translateY(0) scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.3rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--brand-primary);
+}
+
+.modal-title-wrap h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--brand-light);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  background-color: #f1f5f9;
+  color: var(--brand-dark);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.form-row-2 {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row-2 .form-group {
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Modal de Confirmação de Exclusão Específica */
+.modal-confirm {
+  max-width: 440px;
+  text-align: center;
+  padding: 2rem 1.8rem;
+}
+
+.modal-icon-danger {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: #fee2e2;
+  color: #ef4444;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.1rem auto;
+}
+
+.modal-confirm h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+  margin-bottom: 0.5rem;
+}
+
+.delete-warning-text {
+  font-size: 0.88rem;
+  color: var(--brand-muted);
+  margin-bottom: 0.75rem;
+}
+
+.delete-task-preview {
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--brand-dark);
+  margin-bottom: 0.75rem;
+  word-break: break-word;
+}
+
+.delete-subtext {
+  font-size: 0.75rem;
+  color: #ef4444;
+  font-weight: 500;
+  margin-bottom: 1.3rem;
+}
+
+.modal-footer-center {
+  justify-content: center;
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. TOAST NOTIFICATIONS
+   -------------------------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  background: var(--surface-white);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.15), 0 4px 6px -4px rgba(15, 23, 42, 0.1);
+  border-left: 4px solid var(--brand-accent);
+  color: var(--brand-dark);
+  font-size: 0.84rem;
+  font-weight: 500;
+  min-width: 280px;
+  max-width: 380px;
+  transform: translateX(120%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  opacity: 0;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-success { border-left-color: #10b981; }
+.toast-success i { color: #10b981; }
+
+.toast-danger { border-left-color: #ef4444; }
+.toast-danger i { color: #ef4444; }
+
+.toast-info { border-left-color: #2563eb; }
+.toast-info i { color: #2563eb; }
+
+/* --------------------------------------------------------------------------
+   10. RESPONSIVIDADE
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .app-header {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .task-creation-bar {
+    margin: 0.75rem 1.25rem 0.5rem 1.25rem;
+  }
+
+  .kanban-toolbar {
+    margin: 0.25rem 1.25rem 0.65rem 1.25rem;
+  }
+
+  .kanban {
+    padding: 0 1.25rem 1.25rem 1.25rem;
+    height: 80vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .header-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .create-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions {
+    width: 100%;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+
+  .kanban-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .form-row-2 {
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .kanban-column {
+    min-width: 270px;
+  }
+}

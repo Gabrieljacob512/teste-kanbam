@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tecno System - Hub de Demandas | Quadro Kanban</title>
+  <meta name="description" content="Quadro Kanban corporativo da Tecno System para gestão e fluxo de demandas internas com Drag & Drop nativo.">
+  
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6.6.0 via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Corporativo -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+      <div class="brand-info">
+        <h1>Tecno System <span class="brand-subtitle">- Hub de Demandas</span></h1>
+        <p class="brand-desc">Gestão Ágil de Tarefas & Fluxo Contínuo de Entregas</p>
+      </div>
+    </div>
+    
+    <div class="header-meta">
+      <div class="meta-stat">
+        <span class="meta-label">Total de Tarefas</span>
+        <span class="meta-value" id="totalTasksCount">0</span>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="user-profile">
+        <div class="user-avatar" title="Gestor de Operações">
+          <span>TS</span>
+        </div>
+        <div class="user-details">
+          <span class="user-name">Equipe Tecno</span>
+          <span class="user-role">Workspace Ativo</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Barra Superior de Cadastro de Tarefas (Create) -->
+  <section class="task-creation-bar" aria-label="Cadastro de Tarefas">
+    <form id="createTaskForm" class="create-form" autocomplete="off">
+      <div class="form-group form-group-title">
+        <label for="taskTitleInput">
+          <i class="fa-solid fa-pen-to-square"></i> Título da Tarefa
+        </label>
+        <input 
+          type="text" 
+          id="taskTitleInput" 
+          placeholder="Ex: Atualizar servidor de produção..." 
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="taskDeptSelect">
+          <i class="fa-solid fa-building"></i> Departamento
+        </label>
+        <select id="taskDeptSelect" required>
+          <option value="TI">TI</option>
+          <option value="RH">RH</option>
+          <option value="Financeiro">Financeiro</option>
+          <option value="Operações">Operações</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="taskPrioritySelect">
+          <i class="fa-solid fa-flag"></i> Prioridade
+        </label>
+        <select id="taskPrioritySelect" required>
+          <option value="Baixa">Baixa</option>
+          <option value="Média" selected>Média</option>
+          <option value="Alta">Alta</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="taskColumnSelect">
+          <i class="fa-solid fa-table-columns"></i> Coluna Inicial
+        </label>
+        <select id="taskColumnSelect" required>
+          <option value="1" selected>Backlog</option>
+          <option value="2">Priorizado</option>
+          <option value="3">Em Desenvolvimento</option>
+          <option value="4">Teste / Validação</option>
+          <option value="5">Finalizado</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" id="addTaskBtn" class="btn-primary">
+          <i class="fa-solid fa-plus"></i> Adicionar Tarefa
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Barra de Filtros e Busca Rápida -->
+  <div class="kanban-toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Filtrar demandas por título ou responsável...">
+      <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Limpar busca" style="display: none;">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label"><i class="fa-solid fa-filter"></i> Depto:</span>
+      <button class="filter-pill active" data-filter="all">Todos</button>
+      <button class="filter-pill" data-filter="TI">TI</button>
+      <button class="filter-pill" data-filter="RH">RH</button>
+      <button class="filter-pill" data-filter="Financeiro">Financeiro</button>
+      <button class="filter-pill" data-filter="Operações">Operações</button>
+    </div>
+  </div>
+
+  <!-- Container Principal do Kanban (5 Colunas Estilizadas) -->
+  <main class="kanban" id="kanbanBoard">
+    <!-- Coluna 1: Backlog -->
+    <div class="kanban-column" data-id="1">
+      <div class="column-header">
+        <div class="column-title-wrap">
+          <i class="fa-solid fa-inbox column-icon"></i>
+          <h2 class="column-title">Backlog</h2>
+        </div>
+        <span class="column-count" id="count-1">0</span>
+      </div>
+      <div class="kanban-cards" data-column-id="1" id="cards-col-1">
+        <!-- Cartões renderizados dinamicamente via JS -->
+      </div>
+    </div>
+
+    <!-- Coluna 2: Priorizado -->
+    <div class="kanban-column" data-id="2">
+      <div class="column-header">
+        <div class="column-title-wrap">
+          <i class="fa-solid fa-fire column-icon"></i>
+          <h2 class="column-title">Priorizado</h2>
+        </div>
+        <span class="column-count" id="count-2">0</span>
+      </div>
+      <div class="kanban-cards" data-column-id="2" id="cards-col-2">
+        <!-- Cartões renderizados dinamicamente via JS -->
+      </div>
+    </div>
+
+    <!-- Coluna 3: Em Desenvolvimento -->
+    <div class="kanban-column" data-id="3">
+      <div class="column-header">
+        <div class="column-title-wrap">
+          <i class="fa-solid fa-laptop-code column-icon"></i>
+          <h2 class="column-title">Em Desenvolvimento</h2>
+        </div>
+        <span class="column-count" id="count-3">0</span>
+      </div>
+      <div class="kanban-cards" data-column-id="3" id="cards-col-3">
+        <!-- Cartões renderizados dinamicamente via JS -->
+      </div>
+    </div>
+
+    <!-- Coluna 4: Teste / Validação -->
+    <div class="kanban-column" data-id="4">
+      <div class="column-header">
+        <div class="column-title-wrap">
+          <i class="fa-solid fa-vial-circle-check column-icon"></i>
+          <h2 class="column-title">Teste / Validação</h2>
+        </div>
+        <span class="column-count" id="count-4">0</span>
+      </div>
+      <div class="kanban-cards" data-column-id="4" id="cards-col-4">
+        <!-- Cartões renderizados dinamicamente via JS -->
+      </div>
+    </div>
+
+    <!-- Coluna 5: Finalizado -->
+    <div class="kanban-column" data-id="5">
+      <div class="column-header">
+        <div class="column-title-wrap">
+          <i class="fa-solid fa-circle-check column-icon"></i>
+          <h2 class="column-title">Finalizado</h2>
+        </div>
+        <span class="column-count" id="count-5">0</span>
+      </div>
+      <div class="kanban-cards" data-column-id="5" id="cards-col-5">
+        <!-- Cartões renderizados dinamicamente via JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Edição (Update) -->
+  <div class="modal-backdrop" id="editModal" aria-hidden="true" role="dialog" aria-labelledby="editModalTitle">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <i class="fa-solid fa-pen-nib"></i>
+          <h3 id="editModalTitle">Editar Tarefa</h3>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeEditModalBtn" aria-label="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="editTaskForm" class="modal-form">
+        <input type="hidden" id="editTaskId">
+
+        <div class="form-group">
+          <label for="editTaskTitle">Título da Demanda</label>
+          <input type="text" id="editTaskTitle" required placeholder="Título descritivo da demanda...">
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="editTaskDept">Departamento</label>
+            <select id="editTaskDept" required>
+              <option value="TI">TI</option>
+              <option value="RH">RH</option>
+              <option value="Financeiro">Financeiro</option>
+              <option value="Operações">Operações</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="editTaskPriority">Prioridade</label>
+            <select id="editTaskPriority" required>
+              <option value="Baixa">Baixa</option>
+              <option value="Média">Média</option>
+              <option value="Alta">Alta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="editTaskColumn">Coluna / Fase</label>
+            <select id="editTaskColumn" required>
+              <option value="1">Backlog</option>
+              <option value="2">Priorizado</option>
+              <option value="3">Em Desenvolvimento</option>
+              <option value="4">Teste / Validação</option>
+              <option value="5">Finalizado</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="editAssigneeName">Responsável</label>
+            <input type="text" id="editAssigneeName" placeholder="Nome do colaborador" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelEditBtn">Cancelar</button>
+          <button type="submit" class="btn-primary" id="saveEditBtn">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão (Delete) -->
+  <div class="modal-backdrop" id="deleteModal" aria-hidden="true" role="dialog" aria-labelledby="deleteModalTitle">
+    <div class="modal-container modal-confirm">
+      <div class="modal-icon-danger">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 id="deleteModalTitle">Excluir Demanda?</h3>
+      <p class="delete-warning-text">
+        Você está prestes a remover permanentemente a tarefa:
+      </p>
+      <div class="delete-task-preview" id="deleteTaskTitlePreview">
+        <!-- Título da tarefa a excluir -->
+      </div>
+      <p class="delete-subtext">Esta operação não poderá ser desfeita.</p>
+
+      <div class="modal-footer modal-footer-center">
+        <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+        <button type="button" class="btn-danger" id="confirmDeleteBtn">
+          <i class="fa-regular fa-trash-can"></i> Confirmar Exclusão
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container de Notificações Toast -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
