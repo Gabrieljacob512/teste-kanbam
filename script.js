@@ -3,21 +3,53 @@
  * TECNO SYSTEM - HUB DE DEMANDAS (QUADRO KANBAN)
  * Script Principal: Vanilla JavaScript & HTML5 Drag and Drop API
  * ==========================================================================
+ *
+ * @file script.js
+ * @description Módulo central de controle e gerenciamento do quadro Kanban corporativo.
+ * Implementa todo o ciclo de vida das demandas (CRUD), armazenamento local via
+ * LocalStorage, drag-and-drop nativo com a API HTML5, renderização reativa da interface,
+ * filtros por departamento e mecanismo de busca textual em tempo real.
+ * @author Equipe Tecno System
+ * @version 1.0.0
  */
 
-// Chave para armazenamento permanente no LocalStorage
+// --------------------------------------------------------------------------
+// 1. CONSTANTES GLOBAIS E SEED DATA
+// --------------------------------------------------------------------------
+
+/**
+ * Chave de armazenamento persistente no LocalStorage do navegador.
+ * Isola as demandas deste quadro evitando colisões com outros módulos do domínio.
+ * @type {string}
+ */
 const STORAGE_KEY = 'tecnosystem_kanban_tasks';
 
-// --------------------------------------------------------------------------
-// 1. SEED DATA AUTOMÁTICO (6 Demandas Corporativas Realistas)
-// --------------------------------------------------------------------------
+/**
+ * Definição da estrutura de dados de uma demanda corporativa (Tarefa).
+ * @typedef {Object} Task
+ * @property {string} id - Identificador único alfanumérico da demanda.
+ * @property {string} title - Título descritivo da tarefa.
+ * @property {('TI'|'RH'|'Financeiro'|'Operações')} department - Departamento encarregado.
+ * @property {('Baixa'|'Média'|'Alta')} priority - Severidade de prioridade da demanda.
+ * @property {number} columnId - Coluna do fluxo onde a demanda reside (1 a 5).
+ * @property {number} commentsCount - Total de comentários corporativos registrados.
+ * @property {number} attachmentsCount - Total de arquivos anexos vinculados.
+ * @property {string} assigneeName - Nome do profissional responsável pela execução.
+ * @property {string} assigneeAvatar - Iniciais para renderização no avatar circular.
+ */
+
+/**
+ * Dados de semente inicial (seed data) com 6 demandas corporativas realistas.
+ * Utilizado para popular a aplicação no primeiro acesso ou caso o LocalStorage esteja limpo.
+ * @type {Array<Task>}
+ */
 const INITIAL_TASKS = [
   {
     id: 'task-1',
     title: 'Troca de Notebook - TI',
     department: 'TI',
     priority: 'Alta',
-    columnId: 1, // Backlog
+    columnId: 1, // Coluna 1: Backlog
     commentsCount: 4,
     attachmentsCount: 2,
     assigneeName: 'Carlos Eduardo',
@@ -28,7 +60,7 @@ const INITIAL_TASKS = [
     title: 'Admissão de Estagiário - RH',
     department: 'RH',
     priority: 'Média',
-    columnId: 2, // Priorizado
+    columnId: 2, // Coluna 2: Priorizado
     commentsCount: 2,
     attachmentsCount: 3,
     assigneeName: 'Mariana Souza',
@@ -39,7 +71,7 @@ const INITIAL_TASKS = [
     title: 'Aprovação de Reembolso - Financeiro',
     department: 'Financeiro',
     priority: 'Alta',
-    columnId: 2, // Priorizado
+    columnId: 2, // Coluna 2: Priorizado
     commentsCount: 5,
     attachmentsCount: 1,
     assigneeName: 'Felipe Rocha',
@@ -50,7 +82,7 @@ const INITIAL_TASKS = [
     title: 'Revisão de SLA de Servidores - TI',
     department: 'TI',
     priority: 'Média',
-    columnId: 3, // Em Desenvolvimento
+    columnId: 3, // Coluna 3: Em Desenvolvimento
     commentsCount: 3,
     attachmentsCount: 0,
     assigneeName: 'Lucas Moura',
@@ -61,7 +93,7 @@ const INITIAL_TASKS = [
     title: 'Treinamento de Onboarding Q4 - Operações',
     department: 'Operações',
     priority: 'Baixa',
-    columnId: 4, // Teste / Validação
+    columnId: 4, // Coluna 4: Teste / Validação
     commentsCount: 1,
     attachmentsCount: 4,
     assigneeName: 'Beatriz Lima',
@@ -72,7 +104,7 @@ const INITIAL_TASKS = [
     title: 'Fechamento Mensal e Balanço - Financeiro',
     department: 'Financeiro',
     priority: 'Alta',
-    columnId: 5, // Finalizado
+    columnId: 5, // Coluna 5: Finalizado
     commentsCount: 6,
     attachmentsCount: 5,
     assigneeName: 'Renato Alves',
@@ -80,7 +112,11 @@ const INITIAL_TASKS = [
   }
 ];
 
-// Paleta de gradientes para os Avatares de Colaboradores
+/**
+ * Paleta corporativa de gradientes para os avatares dos colaboradores.
+ * O gradiente é atribuído de forma determinística por meio de um cálculo de hash sobre o nome.
+ * @type {Array<string>}
+ */
 const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #3b82f6, #1d4ed8)',
   'linear-gradient(135deg, #10b981, #047857)',
@@ -92,32 +128,54 @@ const AVATAR_GRADIENTS = [
 ];
 
 // --------------------------------------------------------------------------
-// 2. ESTADO DA APLICAÇÃO
+// 2. ESTADO DA APLICAÇÃO (STATE MANAGEMENT)
 // --------------------------------------------------------------------------
+
+/**
+ * Lista em memória das tarefas ativas gerenciadas pelo quadro.
+ * @type {Array<Task>}
+ */
 let tasks = [];
+
+/**
+ * ID da tarefa temporariamente selecionada para confirmação de exclusão no modal.
+ * @type {string|null}
+ */
 let taskToDeleteId = null;
+
+/**
+ * Filtro departamental atualmente ativo na barra de ferramentas ('all' exibe todos).
+ * @type {string}
+ */
 let currentDeptFilter = 'all';
+
+/**
+ * Termo de busca textual aplicado em tempo real na listagem.
+ * @type {string}
+ */
 let currentSearchQuery = '';
 
 // --------------------------------------------------------------------------
-// 3. SELETORES DO DOM
+// 3. SELETORES E REFERÊNCIAS DO DOM (CACHE)
 // --------------------------------------------------------------------------
+
+// Contêiner principal e contador geral do quadro
 const kanbanBoard = document.getElementById('kanbanBoard');
 const totalTasksCountEl = document.getElementById('totalTasksCount');
 
-// Form de Criação
+// Formulário superior de inclusão rápida de demandas (Create)
 const createTaskForm = document.getElementById('createTaskForm');
 const taskTitleInput = document.getElementById('taskTitleInput');
 const taskDeptSelect = document.getElementById('taskDeptSelect');
 const taskPrioritySelect = document.getElementById('taskPrioritySelect');
 const taskColumnSelect = document.getElementById('taskColumnSelect');
 
-// Barra de Filtros e Busca
+// Barra de busca e filtros departamentais
 const searchInput = document.getElementById('searchInput');
 const clearSearchBtn = document.getElementById('clearSearchBtn');
 const filterPills = document.querySelectorAll('.filter-pill');
 
-// Modal de Edição
+// Componentes do modal de edição de tarefas (Update)
 const editModal = document.getElementById('editModal');
 const editTaskForm = document.getElementById('editTaskForm');
 const editTaskIdInput = document.getElementById('editTaskId');
@@ -129,13 +187,13 @@ const editAssigneeNameInput = document.getElementById('editAssigneeName');
 const closeEditModalBtn = document.getElementById('closeEditModalBtn');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-// Modal de Exclusão
+// Componentes do modal de confirmação de exclusão (Delete)
 const deleteModal = document.getElementById('deleteModal');
 const deleteTaskTitlePreview = document.getElementById('deleteTaskTitlePreview');
 const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
-// Toast Container
+// Contêiner global para notificações flutuantes (Toasts)
 const toastContainer = document.getElementById('toastContainer');
 
 // --------------------------------------------------------------------------
@@ -143,29 +201,38 @@ const toastContainer = document.getElementById('toastContainer');
 // --------------------------------------------------------------------------
 
 /**
- * Carrega as tarefas do localStorage ou inicializa com o seed corporativo
+ * Carrega a coleção de tarefas do LocalStorage ou injeta o seed corporativo padrão.
+ * Executa conversão expressa de columnId para inteiro, prevenindo divergências de tipagem estrita.
+ *
+ * @function loadTasks
+ * @returns {void}
  */
 function loadTasks() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       tasks = JSON.parse(stored);
-      // Garantir compatibilidade de tipos
+      // Garantir compatibilidade de tipos: assegura que columnId seja sempre numérico
       tasks.forEach(task => {
         task.columnId = parseInt(task.columnId, 10);
       });
     } else {
+      // Primeiro carregamento: inicializa o estado com sementes corporativas
       tasks = [...INITIAL_TASKS];
       saveTasks();
     }
   } catch (error) {
+    // Tratamento defensivo em caso de corrupção do JSON ou bloqueio de storage no navegador
     console.error('Erro ao ler tarefas do localStorage:', error);
     tasks = [...INITIAL_TASKS];
   }
 }
 
 /**
- * Salva a lista de tarefas no localStorage
+ * Persiste o estado atual das tarefas no LocalStorage como string JSON serializada.
+ *
+ * @function saveTasks
+ * @returns {void}
  */
 function saveTasks() {
   try {
@@ -177,7 +244,13 @@ function saveTasks() {
 }
 
 /**
- * Gera iniciais do colaborador com base no nome
+ * Extrai as iniciais de exibição a partir do nome completo de um colaborador.
+ * - Caso nome simples: retorna os 2 primeiros caracteres.
+ * - Caso composto: retorna a inicial do primeiro nome somada à do último sobrenome.
+ *
+ * @function getInitials
+ * @param {string} name - Nome completo do colaborador.
+ * @returns {string} Iniciais em maiúsculas (máximo 2 caracteres).
  */
 function getInitials(name) {
   if (!name) return 'TS';
@@ -187,11 +260,17 @@ function getInitials(name) {
 }
 
 /**
- * Gera gradiente de fundo determinístico a partir do nome
+ * Retorna um gradiente visualmente determinístico derivado de um hash da string do nome.
+ * Garante que o mesmo colaborador mantenha sempre a mesma identidade cromática no quadro.
+ *
+ * @function getAvatarGradient
+ * @param {string} name - Nome do colaborador utilizado como semente de hash.
+ * @returns {string} Expressão CSS do gradiente linear correspondente.
  */
 function getAvatarGradient(name) {
   if (!name) return AVATAR_GRADIENTS[0];
   let hash = 0;
+  // Algoritmo clássico de dispersão bitwise (DJB2) para mapeamento uniforme
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
@@ -200,12 +279,19 @@ function getAvatarGradient(name) {
 }
 
 /**
- * Sistema de Notificações Toast Moderno
+ * Exibe uma notificação temporária do tipo Toast na área inferior da interface.
+ * Controla os gatilhos de entrada (requestAnimationFrame) e descarte assíncrono (transitionend).
+ *
+ * @function showToast
+ * @param {string} message - Texto informativo a ser apresentado.
+ * @param {('info'|'success'|'danger')} [type='info'] - Tipo visual que define ícone e cor da borda.
+ * @returns {void}
  */
 function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
 
+  // Seleção de ícone semântico via FontAwesome
   let iconClass = 'fa-info-circle';
   if (type === 'success') iconClass = 'fa-circle-check';
   if (type === 'danger') iconClass = 'fa-circle-exclamation';
@@ -217,12 +303,12 @@ function showToast(message, type = 'info') {
 
   toastContainer.appendChild(toast);
 
-  // Trigger para animação de entrada
+  // Trigger para animação fluida de transição CSS
   requestAnimationFrame(() => {
     toast.classList.add('show');
   });
 
-  // Remover após 3.5 segundos
+  // Temporizador para desvanecimento e remoção física do nó do DOM
   setTimeout(() => {
     toast.classList.remove('show');
     toast.addEventListener('transitionend', () => {
@@ -236,9 +322,14 @@ function showToast(message, type = 'info') {
 // --------------------------------------------------------------------------
 
 /**
- * Renderiza todos os cartões nas colunas corretas e atualiza contadores
+ * Renderiza integralmente todos os cartões nas colunas correspondentes e atualiza contadores.
+ * Aplica os critérios de busca textual e filtragem por departamento de forma reativa.
+ *
+ * @function renderBoard
+ * @returns {void}
  */
 function renderBoard() {
+  // Mapeamento dos contêineres de cartões por ID de coluna
   const columnContainers = {
     1: document.getElementById('cards-col-1'),
     2: document.getElementById('cards-col-2'),
@@ -247,6 +338,7 @@ function renderBoard() {
     5: document.getElementById('cards-col-5')
   };
 
+  // Mapeamento dos elementos de contadores numéricos
   const columnCounters = {
     1: document.getElementById('count-1'),
     2: document.getElementById('count-2'),
@@ -255,18 +347,18 @@ function renderBoard() {
     5: document.getElementById('count-5')
   };
 
-  // Limpar os containers
+  // Limpar os contêineres antes da reinserção
   for (let colId = 1; colId <= 5; colId++) {
     if (columnContainers[colId]) {
       columnContainers[colId].innerHTML = '';
     }
   }
 
-  // Filtragem (busca de texto e filtro de departamento)
+  // Pipeline de filtragem: combina filtro por departamento e busca textual em múltiplos campos
   const filteredTasks = tasks.filter(task => {
     const matchesDept = (currentDeptFilter === 'all' || task.department === currentDeptFilter);
     const query = currentSearchQuery.toLowerCase().trim();
-    const matchesSearch = !query || 
+    const matchesSearch = !query ||
       task.title.toLowerCase().includes(query) ||
       task.assigneeName.toLowerCase().includes(query) ||
       task.department.toLowerCase().includes(query);
@@ -274,10 +366,10 @@ function renderBoard() {
     return matchesDept && matchesSearch;
   });
 
-  // Contadores por coluna
+  // Acumuladores de contagem de demandas por coluna
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-  // Criar e posicionar os cartões
+  // Construção e posicionamento dos cartões no DOM
   filteredTasks.forEach(task => {
     const colId = task.columnId;
     if (columnContainers[colId]) {
@@ -287,13 +379,13 @@ function renderBoard() {
     }
   });
 
-  // Atualizar os contadores de cada coluna
+  // Atualização dos indicadores de cada coluna e inserção de mensagem quando vazia
   for (let colId = 1; colId <= 5; colId++) {
     if (columnCounters[colId]) {
       columnCounters[colId].textContent = counts[colId];
     }
 
-    // Se a coluna estiver vazia, exibir aviso sutil
+    // Se a coluna estiver vazia, exibe placeholder informativo
     if (counts[colId] === 0 && columnContainers[colId]) {
       const emptyMsg = document.createElement('div');
       emptyMsg.className = 'empty-column-msg';
@@ -305,14 +397,18 @@ function renderBoard() {
     }
   }
 
-  // Atualizar contador total
+  // Atualizar contador cumulativo no topo do cabeçalho
   if (totalTasksCountEl) {
     totalTasksCountEl.textContent = tasks.length;
   }
 }
 
 /**
- * Cria a estrutura DOM de um cartão Kanban
+ * Cria a estrutura DOM completa de um cartão Kanban com suporte a Drag & Drop.
+ *
+ * @function createCardElement
+ * @param {Task} task - Objeto da tarefa a ser renderizada.
+ * @returns {HTMLDivElement} Elemento DOM do cartão Kanban pronto para inserção.
  */
 function createCardElement(task) {
   const card = document.createElement('div');
@@ -321,12 +417,12 @@ function createCardElement(task) {
   card.setAttribute('data-id', task.id);
   card.id = `card-${task.id}`;
 
-  // Mapeamento de classes de estilo para prioridade
+  // Resolução de classes de badge para prioridade
   let priorityClass = 'badge-medium';
   if (task.priority === 'Baixa') priorityClass = 'badge-low';
   if (task.priority === 'Alta') priorityClass = 'badge-high';
 
-  // Mapeamento de classes para departamento
+  // Resolução de classes de badge para departamento
   let deptClass = 'badge-dept-ti';
   if (task.department === 'RH') deptClass = 'badge-dept-rh';
   if (task.department === 'Financeiro') deptClass = 'badge-dept-fin';
@@ -373,14 +469,18 @@ function createCardElement(task) {
     </div>
   `;
 
-  // Anexar eventos específicos do cartão
+  // Anexar ouvintes de eventos interativos ao cartão recém-criado
   attachCardEvents(card, task);
 
   return card;
 }
 
 /**
- * Escapa HTML para prevenir injeção de scripts
+ * Sanitiza sequências de caracteres para prevenir ataques de Cross-Site Scripting (XSS).
+ *
+ * @function escapeHtml
+ * @param {string|number|null|undefined} text - Valor textual de entrada.
+ * @returns {string} String com entidades HTML sensíveis devidamente codificadas.
  */
 function escapeHtml(text) {
   if (text === null || text === undefined) return '';
@@ -397,17 +497,22 @@ function escapeHtml(text) {
 // --------------------------------------------------------------------------
 
 /**
- * Anexa listeners ao cartão (Drag events, clique para editar, clique para excluir)
+ * Anexa listeners ao cartão (ciclo de arraste, clique para edição e exclusão).
+ *
+ * @function attachCardEvents
+ * @param {HTMLElement} card - Elemento DOM do cartão.
+ * @param {Task} task - Objeto de dados correspondente à demanda.
+ * @returns {void}
  */
 function attachCardEvents(card, task) {
-  // Drag Start
+  // DRAGSTART: Inicia a transferência de dados e define o feedback visual de arraste
   card.addEventListener('dragstart', (e) => {
     card.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', task.id.toString());
   });
 
-  // Drag End
+  // DRAGEND: Finaliza o arraste e restaura os estilos normais dos contêineres
   card.addEventListener('dragend', () => {
     card.classList.remove('dragging');
     // Remove qualquer destaque de hover remanescente em todas as colunas
@@ -445,13 +550,16 @@ function attachCardEvents(card, task) {
 // --------------------------------------------------------------------------
 
 /**
- * Inicializa os ouvintes das colunas para gerenciar DragOver, DragLeave e Drop
+ * Inicializa os ouvintes das colunas para gerenciar os eventos dragover, dragleave e drop.
+ *
+ * @function initColumnDragAndDrop
+ * @returns {void}
  */
 function initColumnDragAndDrop() {
   const columnContainers = document.querySelectorAll('.kanban-cards');
 
   columnContainers.forEach(container => {
-    // DRAGOVER: Necessário e.preventDefault() para permitir o drop
+    // DRAGOVER: e.preventDefault() é mandatório pela especificação HTML5 para permitir a queda (drop)
     container.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
@@ -516,7 +624,12 @@ function initColumnDragAndDrop() {
 }
 
 /**
- * Determina o elemento abaixo do cursor para ordenação natural de cartões
+ * Determina geometricamente o elemento abaixo do cursor para ordenação natural de cartões.
+ *
+ * @function getDragAfterElement
+ * @param {HTMLElement} container - O contêiner de cartões da coluna.
+ * @param {number} y - Posição Y do cursor (e.clientY).
+ * @returns {HTMLElement|undefined} O elemento subsequente de referência para ordenação.
  */
 function getDragAfterElement(container, y) {
   const draggableElements = [...container.querySelectorAll('.kanban-card:not(.dragging)')];
@@ -538,7 +651,11 @@ function getDragAfterElement(container, y) {
 // --------------------------------------------------------------------------
 
 /**
- * Cadastra uma nova tarefa
+ * Processa o cadastro de uma nova demanda vinda do formulário superior.
+ *
+ * @function handleCreateTask
+ * @param {SubmitEvent} e - Evento de envio do formulário.
+ * @returns {void}
  */
 function handleCreateTask(e) {
   e.preventDefault();
@@ -594,7 +711,11 @@ function handleCreateTask(e) {
 // --------------------------------------------------------------------------
 
 /**
- * Abre o modal de edição preenchido com os dados da tarefa
+ * Abre o modal de edição preenchido com os dados da tarefa selecionada.
+ *
+ * @function openEditModal
+ * @param {string} taskId - Identificador da tarefa.
+ * @returns {void}
  */
 function openEditModal(taskId) {
   const task = tasks.find(t => t.id.toString() === taskId.toString());
@@ -613,7 +734,10 @@ function openEditModal(taskId) {
 }
 
 /**
- * Fecha o modal de edição
+ * Fecha o modal de edição e limpa os campos do formulário.
+ *
+ * @function closeEditModal
+ * @returns {void}
  */
 function closeEditModal() {
   editModal.classList.remove('active');
@@ -622,7 +746,11 @@ function closeEditModal() {
 }
 
 /**
- * Salva as alterações feitas no modal de edição
+ * Salva as alterações feitas no modal de edição, persistindo as atualizações.
+ *
+ * @function handleSaveEdit
+ * @param {SubmitEvent} e - Evento de envio do formulário.
+ * @returns {void}
  */
 function handleSaveEdit(e) {
   e.preventDefault();
@@ -664,7 +792,11 @@ function handleSaveEdit(e) {
 // --------------------------------------------------------------------------
 
 /**
- * Abre o modal de confirmação de exclusão
+ * Abre o modal de confirmação de exclusão da demanda.
+ *
+ * @function openDeleteModal
+ * @param {string} taskId - Identificador da tarefa a ser excluída.
+ * @returns {void}
  */
 function openDeleteModal(taskId) {
   const task = tasks.find(t => t.id.toString() === taskId.toString());
@@ -679,7 +811,10 @@ function openDeleteModal(taskId) {
 }
 
 /**
- * Fecha o modal de confirmação de exclusão
+ * Fecha o modal de confirmação de exclusão sem remover a demanda.
+ *
+ * @function closeDeleteModal
+ * @returns {void}
  */
 function closeDeleteModal() {
   deleteModal.classList.remove('active');
@@ -688,7 +823,10 @@ function closeDeleteModal() {
 }
 
 /**
- * Confirma a exclusão definitiva da tarefa
+ * Confirma a exclusão definitiva da tarefa do estado e do armazenamento local.
+ *
+ * @function handleConfirmDelete
+ * @returns {void}
  */
 function handleConfirmDelete() {
   if (!taskToDeleteId) return;
@@ -710,7 +848,10 @@ function handleConfirmDelete() {
 // --------------------------------------------------------------------------
 
 /**
- * Inicializa a barra de pesquisa rápida e filtros por departamento
+ * Inicializa a barra de pesquisa rápida e filtros por departamento.
+ *
+ * @function initFiltersAndSearch
+ * @returns {void}
  */
 function initFiltersAndSearch() {
   // Input de Busca
@@ -777,3 +918,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
