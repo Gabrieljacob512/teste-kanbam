@@ -1,13 +1,20 @@
 /* ==========================================================================
    TECNO SYSTEM - QUADRO KANBAN (HUB DE DEMANDAS)
    Design System & Estilização Corporativa
+   ==========================================================================
+   
+   Propósito do Módulo CSS:
+   Define toda a identidade visual, hierarquia tipográfica, paleta cromática,
+   componentes de interface, estados de interação (hover, focus, drag & drop)
+   e regras de responsividade para o Hub de Demandas da Tecno System.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. RESET UNIVERSAL & VARIÁVEIS
+   1. RESET UNIVERSAL & VARIÁVEIS (DESIGN TOKENS)
+   Define o repositório central de tokens CSS para padronização e fácil manutenção.
    -------------------------------------------------------------------------- */
 :root {
-  /* Paleta Primária & Fundo */
+  /* Paleta Primária & Fundo: gradiente radial suave para profundidade visual */
   --bg-gradient: radial-gradient(circle at 10% 20%, #f9fbfd 0%, #edf2f7 50%, #e2e8f0 100%);
   --surface-white: #ffffff;
   --surface-ice: #f1f5f9;
@@ -15,22 +22,22 @@
   --border-subtle: #e2e8f0;
   --border-hover: #cbd5e1;
 
-  /* Cores Corporativas */
-  --brand-primary: #1e3a8a;       /* Azul marinho corporativo */
-  --brand-accent: #2563eb;        /* Azul vibrante */
+  /* Cores Corporativas Oficiais */
+  --brand-primary: #1e3a8a;       /* Azul marinho corporativo para títulos */
+  --brand-accent: #2563eb;        /* Azul vibrante para ênfase e ações primárias */
   --brand-accent-hover: #1d4ed8;
-  --brand-dark: #0f172a;          /* Slate 900 */
-  --brand-muted: #64748b;         /* Slate 500 */
-  --brand-light: #94a3b8;         /* Slate 400 */
+  --brand-dark: #0f172a;          /* Slate 900 para legibilidade tipográfica máxima */
+  --brand-muted: #64748b;         /* Slate 500 para textos secundários e metadados */
+  --brand-light: #94a3b8;         /* Slate 400 para ícones inativos e bordas */
 
-  /* Cores das Colunas (data-id) */
-  --col-backlog: #f43f5e;         /* 1: Rosada / Rosa moderno */
-  --col-priorizado: #ea580c;      /* 2: Laranja escuro corporativo */
-  --col-desenvolvimento: #eab308; /* 3: Amarelo ouro */
-  --col-teste: #2563eb;           /* 4: Azul royal */
-  --col-finalizado: #10b981;      /* 5: Verde esmeralda */
+  /* Cores Temáticas de Identificação das 5 Colunas (baseadas no atributo data-id) */
+  --col-backlog: #f43f5e;         /* Coluna 1: Rosada moderna (captura de demandas) */
+  --col-priorizado: #ea580c;      /* Coluna 2: Laranja corporativo (triagem) */
+  --col-desenvolvimento: #eab308; /* Coluna 3: Amarelo ouro (trabalho em andamento) */
+  --col-teste: #2563eb;           /* Coluna 4: Azul royal (qualidade e validação) */
+  --col-finalizado: #10b981;      /* Coluna 5: Verde esmeralda (concluído) */
 
-  /* Badges de Prioridade */
+  /* Badges de Prioridade: contraste semântico para identificação rápida */
   --badge-low-bg: #dcfce7;
   --badge-low-text: #15803d;
   --badge-med-bg: #ffedd5;
@@ -38,7 +45,7 @@
   --badge-high-bg: #fee2e2;
   --badge-high-text: #b91c1c;
 
-  /* Badges de Departamento */
+  /* Badges de Departamento: categorização cromática por setor corporativo */
   --dept-ti-bg: #e0e7ff;
   --dept-ti-text: #3730a3;
   --dept-rh-bg: #f3e8ff;
@@ -48,14 +55,14 @@
   --dept-ops-bg: #e0f2fe;
   --dept-ops-text: #0369a1;
 
-  /* Sombras & Efeitos */
+  /* Sistema de Sombras com Elevação Escalonada (Box Shadows) */
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
   --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
   --shadow-card-hover: 0 8px 18px rgba(15, 23, 42, 0.1), 0 3px 6px rgba(15, 23, 42, 0.06);
   --shadow-modal: 0 20px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15);
 
-  /* Transições & Raios */
+  /* Raios de Arredondamento & Tempos de Transição */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -64,12 +71,14 @@
   --transition-normal: 0.25s ease;
 }
 
+/* Reset de Modelo de Caixa e Margens */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Configuração Global do Documento */
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-gradient);
@@ -84,6 +93,7 @@ body {
 
 /* --------------------------------------------------------------------------
    2. SCROLLBAR CUSTOMIZADA
+   Barra de rolagem sutil e arredondada para manter estética limpa em webkit.
    -------------------------------------------------------------------------- */
 ::-webkit-scrollbar {
   width: 8px;
@@ -107,6 +117,7 @@ body {
 
 /* --------------------------------------------------------------------------
    3. CABEÇALHO CORPORATIVO
+   Header fixado (sticky) com efeito de vidro fosco (glassmorphism) e métricas.
    -------------------------------------------------------------------------- */
 .app-header {
   background: rgba(255, 255, 255, 0.92);
@@ -123,6 +134,7 @@ body {
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
 }
 
+/* Logotipo e Naming da Aplicação */
 .header-brand {
   display: flex;
   align-items: center;
@@ -166,6 +178,7 @@ body {
   font-weight: 400;
 }
 
+/* Bloco de Metadados: Estatísticas e Perfil */
 .header-meta {
   display: flex;
   align-items: center;
@@ -241,6 +254,7 @@ body {
   gap: 0.3rem;
 }
 
+/* Ponto verde pulsante indicando workspace conectado */
 .user-role::before {
   content: '';
   display: inline-block;
@@ -253,6 +267,7 @@ body {
 
 /* --------------------------------------------------------------------------
    4. BARRA DE CADASTRO DE TAREFAS (CREATE)
+   Área superior com campos inline para inclusão rápida de demandas.
    -------------------------------------------------------------------------- */
 .task-creation-bar {
   background: var(--surface-white);
@@ -277,6 +292,7 @@ body {
   flex: 1 1 140px;
 }
 
+/* O título recebe maior peso de expansão (flex-grow: 3) */
 .form-group-title {
   flex: 3 1 280px;
 }
@@ -297,6 +313,7 @@ body {
   font-size: 0.85rem;
 }
 
+/* Estilos Comuns de Inputs e Selects */
 .create-form input[type="text"],
 .create-form select,
 .modal-form input[type="text"],
@@ -313,6 +330,7 @@ body {
   width: 100%;
 }
 
+/* Efeito de foco acessível com anel de destaque (focus ring) */
 .create-form input[type="text"]:focus,
 .create-form select:focus,
 .modal-form input[type="text"]:focus,
@@ -327,7 +345,7 @@ body {
   align-items: flex-end;
 }
 
-/* Botões Globais */
+/* Botões Padronizados da Aplicação */
 .btn-primary {
   font-family: inherit;
   font-size: 0.88rem;
@@ -400,6 +418,7 @@ body {
 
 /* --------------------------------------------------------------------------
    5. BARRA DE FERRAMENTAS & FILTROS
+   Campo de busca dinâmica e pílulas de filtro por departamento.
    -------------------------------------------------------------------------- */
 .kanban-toolbar {
   margin: 0.35rem 1.75rem 0.85rem 1.75rem;
@@ -506,6 +525,7 @@ body {
 
 /* --------------------------------------------------------------------------
    6. CONTAINER PRINCIPAL DO KANBAN & COLUNAS
+   Layout flexível horizontal com rolagem e colunas com indicadores coloridos.
    -------------------------------------------------------------------------- */
 .kanban {
   display: flex;
@@ -534,7 +554,7 @@ body {
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-/* Linha colorida superior distintiva baseada no 'data-id' via seletor '::after' */
+/* Indicador colorido no topo da coluna através de pseudo-elemento ::after */
 .kanban-column::after {
   content: '';
   position: absolute;
@@ -613,7 +633,7 @@ body {
   justify-content: center;
 }
 
-/* Container de Cartões da Coluna */
+/* Container de Cartões da Coluna (Área de Drop) */
 .kanban-cards {
   padding: 0.85rem 0.85rem;
   display: flex;
@@ -626,14 +646,14 @@ body {
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
-/* Estado de Dragover na coluna (.cards-hover) */
+/* Feedback visual de arraste sobre a coluna (.cards-hover) */
 .kanban-cards.cards-hover {
   background-color: rgba(37, 99, 235, 0.08);
   outline: 2px dashed rgba(37, 99, 235, 0.45);
   outline-offset: -3px;
 }
 
-/* Mensagem de coluna vazia */
+/* Mensagem de estado vazio quando não há tarefas */
 .empty-column-msg {
   display: flex;
   flex-direction: column;
@@ -656,6 +676,7 @@ body {
 
 /* --------------------------------------------------------------------------
    7. CARTÕES KANBAN (CARDS FÍSICOS)
+   Cartão de tarefa com badges, métricas e suporte a Drag & Drop.
    -------------------------------------------------------------------------- */
 .kanban-card {
   background-color: var(--surface-white);
@@ -682,7 +703,7 @@ body {
   cursor: grabbing;
 }
 
-/* Estado Arrastando (.dragging) */
+/* Estado ativo durante o arraste (.dragging) */
 .kanban-card.dragging {
   opacity: 0.5;
   transform: scale(0.97);
@@ -763,7 +784,7 @@ body {
   color: var(--dept-ops-text);
 }
 
-/* Ação rápida de Edição no canto superior */
+/* Ação rápida de Edição no canto superior direito do cartão */
 .card-edit-hint {
   font-size: 0.72rem;
   color: var(--brand-light);
@@ -783,7 +804,7 @@ body {
   background-color: #f1f5f9;
 }
 
-/* Corpo do Cartão (Título/Descrição) */
+/* Corpo do Cartão (Título da Demanda) */
 .card-body {
   cursor: pointer;
 }
@@ -801,7 +822,7 @@ body {
   color: var(--brand-accent);
 }
 
-/* Rodapé do Cartão com Flexbox */
+/* Rodapé do Cartão com Métricas e Identificação do Responsável */
 .card-footer {
   display: flex;
   align-items: center;
@@ -810,7 +831,7 @@ body {
   border-top: 1px solid #f1f5f9;
 }
 
-/* Lado Esquerdo do Rodapé (Comentários e Anexos) */
+/* Lado Esquerdo do Rodapé: Indicadores de comentários e anexos */
 .card-footer-left {
   display: flex;
   align-items: center;
@@ -832,7 +853,7 @@ body {
   color: var(--brand-light);
 }
 
-/* Lado Direito do Rodapé (Avatar 36x36px e Botão Exclusão) */
+/* Lado Direito do Rodapé: Avatar e botão de exclusão */
 .card-footer-right {
   display: flex;
   align-items: center;
@@ -854,7 +875,7 @@ body {
   border: 2px solid #ffffff;
 }
 
-/* Botão Discreto de Exclusão */
+/* Botão de Exclusão Discreto */
 .card-delete-btn {
   background: none;
   border: none;
@@ -877,6 +898,7 @@ body {
 
 /* --------------------------------------------------------------------------
    8. MODAIS (UPDATE & DELETE)
+   Diálogos flutuantes acessíveis sobrepostos com blur de fundo.
    -------------------------------------------------------------------------- */
 .modal-backdrop {
   position: fixed;
@@ -981,7 +1003,7 @@ body {
   border-top: 1px solid var(--border-subtle);
 }
 
-/* Modal de Confirmação de Exclusão Específica */
+/* Modal de Confirmação de Exclusão Crítica */
 .modal-confirm {
   max-width: 440px;
   text-align: center;
@@ -1042,6 +1064,7 @@ body {
 
 /* --------------------------------------------------------------------------
    9. TOAST NOTIFICATIONS
+   Alertas flutuantes temporários no canto inferior direito.
    -------------------------------------------------------------------------- */
 .toast-container {
   position: fixed;
@@ -1089,7 +1112,8 @@ body {
 .toast-info i { color: #2563eb; }
 
 /* --------------------------------------------------------------------------
-   10. RESPONSIVIDADE
+   10. RESPONSIVIDADE & ADAPTAÇÃO MOBILE/TABLET
+   Ajustes de layout fluido para telas menores que 1024px e 768px.
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
   .app-header {
@@ -1153,3 +1177,4 @@ body {
     min-width: 270px;
   }
 }
+

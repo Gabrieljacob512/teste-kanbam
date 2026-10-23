@@ -1,3 +1,15 @@
+<!--
+  ==========================================================================
+  TECNO SYSTEM - HUB DE DEMANDAS (QUADRO KANBAN)
+  Estrutura Semântica da Interface de Usuário (HTML5)
+  ==========================================================================
+
+  Propósito:
+  Interface web completa para gestão ágil de demandas operacionais e corporativas.
+  Adota elementos semânticos HTML5, integração com FontAwesome e Google Fonts (Poppins),
+  suporte nativo a Drag & Drop, diálogos acessíveis (ARIA) para edição/exclusão
+  e área de notificações flutuantes (Toasts).
+-->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,19 +18,22 @@
   <title>Tecno System - Hub de Demandas | Quadro Kanban</title>
   <meta name="description" content="Quadro Kanban corporativo da Tecno System para gestão e fluxo de demandas internas com Drag & Drop nativo.">
   
-  <!-- Google Fonts: Poppins -->
+  <!-- Tipografia Oficial: Poppins via Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- FontAwesome 6.6.0 via CDN -->
+  <!-- Biblioteca de Ícones Vetoriais: FontAwesome 6.6.0 via CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
-  <!-- Stylesheet -->
+  <!-- Folha de Estilos Corporativa (Design System & Responsividade) -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header Corporativo -->
+  <!-- ========================================================================
+       1. CABEÇALHO CORPORATIVO
+       Identidade visual da Tecno System, métricas em tempo real e perfil do operador
+       ======================================================================== -->
   <header class="app-header">
     <div class="header-brand">
       <div class="brand-logo">
@@ -31,11 +46,13 @@
     </div>
     
     <div class="header-meta">
+      <!-- Indicador numérico dinâmico do total de demandas carregadas no quadro -->
       <div class="meta-stat">
         <span class="meta-label">Total de Tarefas</span>
         <span class="meta-value" id="totalTasksCount">0</span>
       </div>
       <div class="meta-divider"></div>
+      <!-- Bloco de perfil corporativo simulando sessão ativa -->
       <div class="user-profile">
         <div class="user-avatar" title="Gestor de Operações">
           <span>TS</span>
@@ -48,7 +65,10 @@
     </div>
   </header>
 
-  <!-- Barra Superior de Cadastro de Tarefas (Create) -->
+  <!-- ========================================================================
+       2. BARRA DE CADASTRO RÁPIDO DE TAREFAS (CREATE)
+       Formulário para inclusão de novas demandas diretamente no topo da página
+       ======================================================================== -->
   <section class="task-creation-bar" aria-label="Cadastro de Tarefas">
     <form id="createTaskForm" class="create-form" autocomplete="off">
       <div class="form-group form-group-title">
@@ -107,7 +127,10 @@
     </form>
   </section>
 
-  <!-- Barra de Filtros e Busca Rápida -->
+  <!-- ========================================================================
+       3. BARRA DE FERRAMENTAS (BUSCA TEXTUAL & FILTRAGEM POR DEPARTAMENTO)
+       Permite pesquisa contínua e isolamento visual de demandas por área
+       ======================================================================== -->
   <div class="kanban-toolbar">
     <div class="search-box">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -126,9 +149,12 @@
     </div>
   </div>
 
-  <!-- Container Principal do Kanban (5 Colunas Estilizadas) -->
+  <!-- ========================================================================
+       4. QUADRO KANBAN (PIPELINE DE FLUXO DE TRABALHO - 5 COLUNAS)
+       Contêiner principal onde os cartões são manipulados via Drag & Drop nativo
+       ======================================================================== -->
   <main class="kanban" id="kanbanBoard">
-    <!-- Coluna 1: Backlog -->
+    <!-- Coluna 1: Backlog (Fase inicial de captura de demandas) -->
     <div class="kanban-column" data-id="1">
       <div class="column-header">
         <div class="column-title-wrap">
@@ -138,11 +164,11 @@
         <span class="column-count" id="count-1">0</span>
       </div>
       <div class="kanban-cards" data-column-id="1" id="cards-col-1">
-        <!-- Cartões renderizados dinamicamente via JS -->
+        <!-- Cartões renderizados dinamicamente via script.js -->
       </div>
     </div>
 
-    <!-- Coluna 2: Priorizado -->
+    <!-- Coluna 2: Priorizado (Demandas triadas prontas para execução) -->
     <div class="kanban-column" data-id="2">
       <div class="column-header">
         <div class="column-title-wrap">
@@ -152,11 +178,11 @@
         <span class="column-count" id="count-2">0</span>
       </div>
       <div class="kanban-cards" data-column-id="2" id="cards-col-2">
-        <!-- Cartões renderizados dinamicamente via JS -->
+        <!-- Cartões renderizados dinamicamente via script.js -->
       </div>
     </div>
 
-    <!-- Coluna 3: Em Desenvolvimento -->
+    <!-- Coluna 3: Em Desenvolvimento (Trabalho em andamento / WIP) -->
     <div class="kanban-column" data-id="3">
       <div class="column-header">
         <div class="column-title-wrap">
@@ -166,11 +192,11 @@
         <span class="column-count" id="count-3">0</span>
       </div>
       <div class="kanban-cards" data-column-id="3" id="cards-col-3">
-        <!-- Cartões renderizados dinamicamente via JS -->
+        <!-- Cartões renderizados dinamicamente via script.js -->
       </div>
     </div>
 
-    <!-- Coluna 4: Teste / Validação -->
+    <!-- Coluna 4: Teste / Validação (Controle de qualidade e homologação) -->
     <div class="kanban-column" data-id="4">
       <div class="column-header">
         <div class="column-title-wrap">
@@ -180,11 +206,11 @@
         <span class="column-count" id="count-4">0</span>
       </div>
       <div class="kanban-cards" data-column-id="4" id="cards-col-4">
-        <!-- Cartões renderizados dinamicamente via JS -->
+        <!-- Cartões renderizados dinamicamente via script.js -->
       </div>
     </div>
 
-    <!-- Coluna 5: Finalizado -->
+    <!-- Coluna 5: Finalizado (Entregas concluídas com sucesso) -->
     <div class="kanban-column" data-id="5">
       <div class="column-header">
         <div class="column-title-wrap">
@@ -194,12 +220,15 @@
         <span class="column-count" id="count-5">0</span>
       </div>
       <div class="kanban-cards" data-column-id="5" id="cards-col-5">
-        <!-- Cartões renderizados dinamicamente via JS -->
+        <!-- Cartões renderizados dinamicamente via script.js -->
       </div>
     </div>
   </main>
 
-  <!-- Modal de Edição (Update) -->
+  <!-- ========================================================================
+       5. DIÁLOGO MODAL: EDIÇÃO DE TAREFA (UPDATE)
+       Janela modal acessível para atualização dos dados e responsável da demanda
+       ======================================================================== -->
   <div class="modal-backdrop" id="editModal" aria-hidden="true" role="dialog" aria-labelledby="editModalTitle">
     <div class="modal-container">
       <div class="modal-header">
@@ -269,7 +298,10 @@
     </div>
   </div>
 
-  <!-- Modal de Confirmação de Exclusão (Delete) -->
+  <!-- ========================================================================
+       6. DIÁLOGO MODAL: CONFIRMAÇÃO DE EXCLUSÃO (DELETE)
+       Janela de confirmação preventiva para evitar remoções acidentais de tarefas
+       ======================================================================== -->
   <div class="modal-backdrop" id="deleteModal" aria-hidden="true" role="dialog" aria-labelledby="deleteModalTitle">
     <div class="modal-container modal-confirm">
       <div class="modal-icon-danger">
@@ -280,7 +312,7 @@
         Você está prestes a remover permanentemente a tarefa:
       </p>
       <div class="delete-task-preview" id="deleteTaskTitlePreview">
-        <!-- Título da tarefa a excluir -->
+        <!-- Título da tarefa a excluir injetado dinamicamente via JS -->
       </div>
       <p class="delete-subtext">Esta operação não poderá ser desfeita.</p>
 
@@ -293,10 +325,13 @@
     </div>
   </div>
 
-  <!-- Container de Notificações Toast -->
+  <!-- ========================================================================
+       7. CONTÊINER DE FEEDBACK (NOTIFICAÇÕES TOAST)
+       Região dinâmica aria-live para injeção de alertas temporários de operação
+       ======================================================================== -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  <!-- Scripts -->
+  <!-- Script Principal da Aplicação -->
   <script src="script.js"></script>
 </body>
 </html>
