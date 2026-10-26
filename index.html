@@ -312,7 +312,41 @@
   </div>
 
   <!-- ========================================================================
-       6. DIÁLOGO MODAL: CONFIRMAÇÃO DE EXCLUSÃO (DELETE)
+       6. DIÁLOGO MODAL: COMENTÁRIOS DA TAREFA
+       Exibe o histórico e permite registrar novos comentários em cada demanda
+       ======================================================================== -->
+  <div class="modal-backdrop" id="commentsModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="commentsModalTitle">
+    <div class="modal-container comments-modal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <i class="fa-regular fa-comment"></i>
+          <h3 id="commentsModalTitle">Comentários</h3>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeCommentsModalBtn" aria-label="Fechar comentários">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="comments-task-title" id="commentsTaskTitle"></p>
+      <div class="comments-list" id="commentsList" aria-live="polite"></div>
+
+      <form id="commentForm" class="comment-form">
+        <div class="form-group">
+          <label for="commentText">Escreva um comentário</label>
+          <textarea id="commentText" rows="3" maxlength="1000" required placeholder="Digite seu comentário..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelCommentsBtn">Fechar</button>
+          <button type="submit" class="btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Adicionar comentário
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       7. DIÁLOGO MODAL: CONFIRMAÇÃO DE EXCLUSÃO (DELETE)
        Janela de confirmação preventiva para evitar remoções acidentais de tarefas
        ======================================================================== -->
   <div class="modal-backdrop" id="deleteModal" aria-hidden="true" role="dialog" aria-labelledby="deleteModalTitle">
@@ -339,7 +373,7 @@
   </div>
 
   <!-- ========================================================================
-       7. CONTÊINER DE FEEDBACK (NOTIFICAÇÕES TOAST)
+       8. CONTÊINER DE FEEDBACK (NOTIFICAÇÕES TOAST)
        Região dinâmica aria-live para injeção de alertas temporários de operação
        ======================================================================== -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>

@@ -34,9 +34,18 @@ const STORAGE_KEY = 'tecnosystem_kanban_tasks';
  * @property {('Baixa'|'Média'|'Alta')} priority - Severidade de prioridade da demanda.
  * @property {number} columnId - Coluna do fluxo onde a demanda reside (1 a 5).
  * @property {number} commentsCount - Total de comentários corporativos registrados.
+ * @property {Array<Comment>} [comments] - Comentários registrados na tarefa.
  * @property {number} attachmentsCount - Total de arquivos anexos vinculados.
  * @property {string} assigneeName - Nome do profissional responsável pela execução.
  * @property {string} assigneeAvatar - Iniciais para renderização no avatar circular.
+ */
+
+/**
+ * @typedef {Object} Comment
+ * @property {string} id - Identificador único do comentário.
+ * @property {string} text - Conteúdo do comentário.
+ * @property {string} author - Autor do comentário.
+ * @property {string} createdAt - Data e hora em formato ISO.
  */
 
 /**
@@ -196,6 +205,16 @@ const editAssigneeNameInput = document.getElementById('editAssigneeName');
 const closeEditModalBtn = document.getElementById('closeEditModalBtn');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
 
+// Componentes do modal de comentários
+const commentsModal = document.getElementById('commentsModal');
+const commentsTaskTitle = document.getElementById('commentsTaskTitle');
+const commentsList = document.getElementById('commentsList');
+const commentForm = document.getElementById('commentForm');
+const commentTextInput = document.getElementById('commentText');
+const closeCommentsModalBtn = document.getElementById('closeCommentsModalBtn');
+const cancelCommentsBtn = document.getElementById('cancelCommentsBtn');
+let taskWithOpenCommentsId = null;
+
 // Componentes do modal de confirmação de exclusão (Delete)
 const deleteModal = document.getElementById('deleteModal');
 const deleteTaskTitlePreview = document.getElementById('deleteTaskTitlePreview');
@@ -224,6 +243,7 @@ function loadTasks() {
       // Garantir compatibilidade de tipos: assegura que columnId seja sempre numérico
       tasks.forEach(task => {
         task.columnId = parseInt(task.columnId, 10);
+        if (!Array.isArray(task.comments)) task.comments = [];
       });
     } else {
       // Primeiro carregamento: inicializa o estado com sementes corporativas
@@ -439,6 +459,7 @@ function createCardElement(task) {
 
   const initials = task.assigneeAvatar || getInitials(task.assigneeName);
   const avatarBg = getAvatarGradient(task.assigneeName);
+  const commentsCount = Array.isArray(task.comments) ? task.comments.length : 0;
 
   card.innerHTML = `
     <div class="card-header-tags">
@@ -459,9 +480,9 @@ function createCardElement(task) {
 
     <div class="card-footer">
       <div class="card-footer-left">
-        <span class="card-metric" title="${task.commentsCount} comentários">
-          <i class="fa-regular fa-comment"></i> ${task.commentsCount}
-        </span>
+        <button type="button" class="card-metric card-comments-btn" title="Ver ou adicionar comentários" aria-label="${commentsCount} comentários. Abrir conversa">
+          <i class="fa-regular fa-comment"></i> ${commentsCount}
+        </button>
         <span class="card-metric" title="${task.attachmentsCount} anexos">
           <i class="fa-solid fa-paperclip"></i> ${task.attachmentsCount}
         </span>
@@ -552,6 +573,12 @@ function attachCardEvents(card, task) {
       openDeleteModal(task.id);
     });
   }
+
+  const commentsBtn = card.querySelector('.card-comments-btn');
+  commentsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openCommentsModal(task.id);
+  });
 }
 
 // --------------------------------------------------------------------------
@@ -700,6 +727,7 @@ function handleCreateTask(e) {
     priority: priority,
     columnId: columnId,
     commentsCount: 0,
+    comments: [],
     attachmentsCount: 0,
     assigneeName: randomAssignee,
     assigneeAvatar: getInitials(randomAssignee)
@@ -755,6 +783,93 @@ function closeEditModal() {
   editModal.classList.remove('active');
   editModal.setAttribute('aria-hidden', 'true');
   editTaskForm.reset();
+}
+
+function openCommentsModal(taskId) {
+  const task = tasks.find(t => t.id.toString() === taskId.toString());
+  if (!task) {
+    showToast('Tarefa não encontrada.', 'danger');
+    return;
+  }
+
+  taskWithOpenCommentsId = task.id;
+  commentsTaskTitle.textContent = task.title;
+  renderComments(task);
+  commentsModal.classList.add('active');
+  commentsModal.setAttribute('aria-hidden', 'false');
+  commentTextInput.focus();
+}
+
+function renderComments(task) {
+  const comments = Array.isArray(task.comments) ? task.comments : [];
+  if (comments.length === 0) {
+    const hasLegacyCount = (task.commentsCount || 0) > 0;
+    commentsList.innerHTML = `
+      <p class="comments-empty">
+        ${hasLegacyCount
+          ? 'Os comentários antigos possuem apenas um contador; o conteúdo não foi salvo. Adicione um comentário para iniciar o histórico.'
+          : 'Ainda não há comentários nesta tarefa.'}
+      </p>
+    `;
+    return;
+  }
+
+  commentsList.innerHTML = comments.map(comment => {
+    const date = new Date(comment.createdAt);
+    const dateLabel = Number.isNaN(date.getTime())
+      ? ''
+      : date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    return `
+      <article class="comment-item">
+        <div class="comment-meta">
+          <strong>${escapeHtml(comment.author || 'Você')}</strong>
+          <time>${escapeHtml(dateLabel)}</time>
+        </div>
+        <p>${escapeHtml(comment.text)}</p>
+      </article>
+    `;
+  }).join('');
+  commentsList.scrollTop = commentsList.scrollHeight;
+}
+
+function closeCommentsModal() {
+  commentsModal.classList.remove('active');
+  commentsModal.setAttribute('aria-hidden', 'true');
+  commentForm.reset();
+  taskWithOpenCommentsId = null;
+}
+
+function handleAddComment(e) {
+  e.preventDefault();
+  const text = commentTextInput.value.trim();
+  if (!text) {
+    showToast('Digite um comentário antes de enviar.', 'danger');
+    commentTextInput.focus();
+    return;
+  }
+
+  const task = tasks.find(t => t.id === taskWithOpenCommentsId);
+  if (!task) {
+    showToast('Tarefa não encontrada.', 'danger');
+    closeCommentsModal();
+    return;
+  }
+
+  if (!Array.isArray(task.comments)) task.comments = [];
+  task.comments.push({
+    id: `comment-${Date.now()}`,
+    text,
+    author: 'Você',
+    createdAt: new Date().toISOString()
+  });
+  task.commentsCount = task.comments.length;
+
+  saveTasks();
+  renderComments(task);
+  renderBoard();
+  commentForm.reset();
+  commentTextInput.focus();
+  showToast('Comentário adicionado com sucesso!', 'success');
 }
 
 /**
@@ -914,6 +1029,11 @@ document.addEventListener('DOMContentLoaded', () => {
   closeEditModalBtn.addEventListener('click', closeEditModal);
   cancelEditBtn.addEventListener('click', closeEditModal);
 
+  // Modal de Comentários
+  commentForm.addEventListener('submit', handleAddComment);
+  closeCommentsModalBtn.addEventListener('click', closeCommentsModal);
+  cancelCommentsBtn.addEventListener('click', closeCommentsModal);
+
   // Modal de Exclusão
   confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
   cancelDeleteBtn.addEventListener('click', closeDeleteModal);
@@ -921,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fechar modais ao clicar no backdrop escuro
   window.addEventListener('click', (e) => {
     if (e.target === editModal) closeEditModal();
+    if (e.target === commentsModal) closeCommentsModal();
     if (e.target === deleteModal) closeDeleteModal();
   });
 
@@ -928,8 +1049,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (editModal.classList.contains('active')) closeEditModal();
+      if (commentsModal.classList.contains('active')) closeCommentsModal();
       if (deleteModal.classList.contains('active')) closeDeleteModal();
     }
   });
 });
-
