@@ -36,6 +36,7 @@ const STORAGE_KEY = 'tecnosystem_kanban_tasks';
  * @property {number} commentsCount - Total de comentários corporativos registrados.
  * @property {Array<Comment>} [comments] - Comentários registrados na tarefa.
  * @property {number} attachmentsCount - Total de arquivos anexos vinculados.
+ * @property {Array<Attachment>} [attachments] - Arquivos e links anexados à tarefa.
  * @property {string} assigneeName - Nome do profissional responsável pela execução.
  * @property {string} assigneeAvatar - Iniciais para renderização no avatar circular.
  */
@@ -46,6 +47,16 @@ const STORAGE_KEY = 'tecnosystem_kanban_tasks';
  * @property {string} text - Conteúdo do comentário.
  * @property {string} author - Autor do comentário.
  * @property {string} createdAt - Data e hora em formato ISO.
+ */
+
+/**
+ * @typedef {Object} Attachment
+ * @property {string} id - Identificador único do anexo.
+ * @property {('file'|'link')} type - Tipo do anexo.
+ * @property {string} name - Nome ou rótulo apresentado na lista.
+ * @property {string} [dataUrl] - Conteúdo do arquivo codificado para armazenamento local.
+ * @property {string} [url] - Endereço do link externo.
+ * @property {string} [size] - Tamanho legível do arquivo.
  */
 
 /**
@@ -216,6 +227,21 @@ const cancelCommentsBtn = document.getElementById('cancelCommentsBtn');
 let taskWithOpenCommentsId = null;
 let editingCommentId = null;
 
+// Componentes do modal de anexos
+const attachmentsModal = document.getElementById('attachmentsModal');
+const attachmentsTaskTitle = document.getElementById('attachmentsTaskTitle');
+const attachmentsTaskDescription = document.getElementById('attachmentsTaskDescription');
+const attachmentsList = document.getElementById('attachmentsList');
+const attachmentFileForm = document.getElementById('attachmentFileForm');
+const attachmentFileInput = document.getElementById('attachmentFileInput');
+const attachmentLinkForm = document.getElementById('attachmentLinkForm');
+const attachmentLinkNameInput = document.getElementById('attachmentLinkName');
+const attachmentLinkUrlInput = document.getElementById('attachmentLinkUrl');
+const closeAttachmentsModalBtn = document.getElementById('closeAttachmentsModalBtn');
+const cancelAttachmentsBtn = document.getElementById('cancelAttachmentsBtn');
+let taskWithOpenAttachmentsId = null;
+const MAX_ATTACHMENT_SIZE = 1024 * 1024;
+
 // Componentes do modal de confirmação de exclusão (Delete)
 const deleteModal = document.getElementById('deleteModal');
 const deleteTaskTitlePreview = document.getElementById('deleteTaskTitlePreview');
@@ -241,16 +267,18 @@ function loadTasks() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       tasks = JSON.parse(stored);
-      // Garantir compatibilidade de tipos: assegura que columnId seja sempre numérico
-      tasks.forEach(task => {
-        task.columnId = parseInt(task.columnId, 10);
-        if (!Array.isArray(task.comments)) task.comments = [];
-      });
     } else {
       // Primeiro carregamento: inicializa o estado com sementes corporativas
       tasks = [...INITIAL_TASKS];
-      saveTasks();
     }
+    // Normaliza registros antigos e mantém os contadores alinhados com os dados reais.
+    tasks.forEach(task => {
+      task.columnId = parseInt(task.columnId, 10);
+      if (!Array.isArray(task.comments)) task.comments = [];
+      if (!Array.isArray(task.attachments)) task.attachments = [];
+      task.attachmentsCount = task.attachments.length;
+    });
+    saveTasks();
   } catch (error) {
     // Tratamento defensivo em caso de corrupção do JSON ou bloqueio de storage no navegador
     console.error('Erro ao ler tarefas do localStorage:', error);
@@ -267,9 +295,11 @@ function loadTasks() {
 function saveTasks() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    return true;
   } catch (error) {
     console.error('Erro ao gravar tarefas no localStorage:', error);
     showToast('Erro ao salvar dados localmente.', 'danger');
+    return false;
   }
 }
 
@@ -461,6 +491,7 @@ function createCardElement(task) {
   const initials = task.assigneeAvatar || getInitials(task.assigneeName);
   const avatarBg = getAvatarGradient(task.assigneeName);
   const commentsCount = Array.isArray(task.comments) ? task.comments.length : 0;
+  const attachmentsCount = Array.isArray(task.attachments) ? task.attachments.length : 0;
 
   card.innerHTML = `
     <div class="card-header-tags">
@@ -484,9 +515,9 @@ function createCardElement(task) {
         <button type="button" class="card-metric card-comments-btn" title="Ver ou adicionar comentários" aria-label="${commentsCount} comentários. Abrir conversa">
           <i class="fa-regular fa-comment"></i> ${commentsCount}
         </button>
-        <span class="card-metric" title="${task.attachmentsCount} anexos">
-          <i class="fa-solid fa-paperclip"></i> ${task.attachmentsCount}
-        </span>
+        <button type="button" class="card-metric card-attachments-btn" title="Ver ou adicionar anexos e links" aria-label="${attachmentsCount} anexos. Abrir anexos">
+          <i class="fa-solid fa-paperclip"></i> ${attachmentsCount}
+        </button>
       </div>
 
       <div class="card-footer-right">
@@ -580,6 +611,205 @@ function attachCardEvents(card, task) {
     e.stopPropagation();
     openCommentsModal(task.id);
   });
+
+  const attachmentsBtn = card.querySelector('.card-attachments-btn');
+  attachmentsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openAttachmentsModal(task.id);
+  });
+}
+
+function openAttachmentsModal(taskId) {
+  const task = tasks.find(t => t.id.toString() === taskId.toString());
+  if (!task) {
+    showToast('Tarefa não encontrada.', 'danger');
+    return;
+  }
+
+  if (!Array.isArray(task.attachments)) task.attachments = [];
+  taskWithOpenAttachmentsId = task.id;
+  attachmentsTaskTitle.textContent = task.title;
+  attachmentsTaskDescription.textContent = task.description || 'Esta tarefa não possui descrição.';
+  renderAttachments(task);
+  attachmentsModal.classList.add('active');
+  attachmentsModal.setAttribute('aria-hidden', 'false');
+  attachmentFileInput.focus();
+}
+
+function renderAttachments(task) {
+  const attachments = Array.isArray(task.attachments) ? task.attachments : [];
+  task.attachmentsCount = attachments.length;
+
+  if (attachments.length === 0) {
+    attachmentsList.innerHTML = '<p class="attachment-empty">Nenhum arquivo ou link anexado.</p>';
+    return;
+  }
+
+  attachmentsList.innerHTML = attachments.map(attachment => {
+    const isFile = attachment.type === 'file';
+    const content = isFile && attachment.dataUrl
+      ? `<a href="${escapeHtml(attachment.dataUrl)}" download="${escapeHtml(attachment.name)}">${escapeHtml(attachment.name)}</a>`
+      : `<a href="${escapeHtml(attachment.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(attachment.name)}</a>`;
+    const detail = isFile
+      ? `${escapeHtml(attachment.size || 'Arquivo')} · Download`
+      : 'Link externo';
+
+    return `
+      <div class="attachment-item">
+        <div class="attachment-item-details">
+          ${content}
+          <small>${detail}</small>
+        </div>
+        <button type="button" class="attachment-delete-btn" data-attachment-id="${escapeHtml(attachment.id)}" aria-label="Remover ${escapeHtml(attachment.name)}" title="Remover anexo">
+          <i class="fa-regular fa-trash-can"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function closeAttachmentsModal() {
+  attachmentsModal.classList.remove('active');
+  attachmentsModal.setAttribute('aria-hidden', 'true');
+  attachmentFileForm.reset();
+  attachmentLinkForm.reset();
+  taskWithOpenAttachmentsId = null;
+}
+
+function handleAddFileAttachment(e) {
+  e.preventDefault();
+  const file = attachmentFileInput.files[0];
+  if (!file) {
+    showToast('Selecione um arquivo para anexar.', 'danger');
+    return;
+  }
+  if (file.size > MAX_ATTACHMENT_SIZE) {
+    showToast('O arquivo deve ter no máximo 1 MB.', 'danger');
+    attachmentFileInput.focus();
+    return;
+  }
+
+  const task = tasks.find(t => t.id === taskWithOpenAttachmentsId);
+  if (!task) {
+    showToast('Tarefa não encontrada.', 'danger');
+    closeAttachmentsModal();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener('load', () => {
+    if (typeof reader.result !== 'string') {
+      showToast('Não foi possível ler o arquivo selecionado.', 'danger');
+      return;
+    }
+    if (taskWithOpenAttachmentsId !== task.id || !tasks.includes(task)) return;
+
+    if (!Array.isArray(task.attachments)) task.attachments = [];
+    const attachment = {
+      id: `attachment-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      type: 'file',
+      name: file.name,
+      size: formatFileSize(file.size),
+      dataUrl: reader.result
+    };
+    task.attachments.push(attachment);
+    task.attachmentsCount = task.attachments.length;
+
+    if (!saveTasks()) {
+      task.attachments.pop();
+      task.attachmentsCount = task.attachments.length;
+      return;
+    }
+
+    renderAttachments(task);
+    renderBoard();
+    attachmentFileForm.reset();
+    showToast('Arquivo anexado com sucesso!', 'success');
+  });
+  reader.addEventListener('error', () => {
+    showToast('Não foi possível ler o arquivo selecionado.', 'danger');
+  });
+  reader.readAsDataURL(file);
+}
+
+function handleAddLinkAttachment(e) {
+  e.preventDefault();
+  const task = tasks.find(t => t.id === taskWithOpenAttachmentsId);
+  if (!task) {
+    showToast('Tarefa não encontrada.', 'danger');
+    closeAttachmentsModal();
+    return;
+  }
+
+  const name = attachmentLinkNameInput.value.trim();
+  const urlValue = attachmentLinkUrlInput.value.trim();
+  let url;
+  try {
+    url = new URL(urlValue);
+  } catch {
+    showToast('Informe um endereço de link válido.', 'danger');
+    attachmentLinkUrlInput.focus();
+    return;
+  }
+  if (!['http:', 'https:'].includes(url.protocol)) {
+    showToast('O link deve começar com http:// ou https://.', 'danger');
+    attachmentLinkUrlInput.focus();
+    return;
+  }
+
+  if (!Array.isArray(task.attachments)) task.attachments = [];
+  task.attachments.push({
+    id: `attachment-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    type: 'link',
+    name,
+    url: url.href
+  });
+  task.attachmentsCount = task.attachments.length;
+
+  if (!saveTasks()) {
+    task.attachments.pop();
+    task.attachmentsCount = task.attachments.length;
+    return;
+  }
+
+  renderAttachments(task);
+  renderBoard();
+  attachmentLinkForm.reset();
+  showToast('Link adicionado com sucesso!', 'success');
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  return `${(bytes / 1024).toFixed(1)} KB`;
+}
+
+function handleRemoveAttachment(e) {
+  const removeButton = e.target.closest('.attachment-delete-btn');
+  if (!removeButton) return;
+
+  const task = tasks.find(t => t.id === taskWithOpenAttachmentsId);
+  if (!task || !Array.isArray(task.attachments)) return;
+
+  const attachmentIndex = task.attachments.findIndex(item => item.id === removeButton.dataset.attachmentId);
+  if (attachmentIndex === -1) {
+    showToast('Anexo não encontrado.', 'danger');
+    renderAttachments(task);
+    return;
+  }
+
+  if (!window.confirm('Tem certeza de que deseja remover este anexo?')) return;
+
+  const [removedAttachment] = task.attachments.splice(attachmentIndex, 1);
+  task.attachmentsCount = task.attachments.length;
+  if (!saveTasks()) {
+    task.attachments.splice(attachmentIndex, 0, removedAttachment);
+    task.attachmentsCount = task.attachments.length;
+    return;
+  }
+
+  renderAttachments(task);
+  renderBoard();
+  showToast('Anexo removido.', 'success');
 }
 
 // --------------------------------------------------------------------------
@@ -730,6 +960,7 @@ function handleCreateTask(e) {
     commentsCount: 0,
     comments: [],
     attachmentsCount: 0,
+    attachments: [],
     assigneeName: randomAssignee,
     assigneeAvatar: getInitials(randomAssignee)
   };
@@ -1118,6 +1349,13 @@ document.addEventListener('DOMContentLoaded', () => {
   commentsList.addEventListener('click', handleCommentListClick);
   commentsList.addEventListener('submit', handleEditComment);
 
+  // Modal de Anexos
+  attachmentFileForm.addEventListener('submit', handleAddFileAttachment);
+  attachmentLinkForm.addEventListener('submit', handleAddLinkAttachment);
+  attachmentsList.addEventListener('click', handleRemoveAttachment);
+  closeAttachmentsModalBtn.addEventListener('click', closeAttachmentsModal);
+  cancelAttachmentsBtn.addEventListener('click', closeAttachmentsModal);
+
   // Modal de Exclusão
   confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
   cancelDeleteBtn.addEventListener('click', closeDeleteModal);
@@ -1126,6 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('click', (e) => {
     if (e.target === editModal) closeEditModal();
     if (e.target === commentsModal) closeCommentsModal();
+    if (e.target === attachmentsModal) closeAttachmentsModal();
     if (e.target === deleteModal) closeDeleteModal();
   });
 
@@ -1134,6 +1373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') {
       if (editModal.classList.contains('active')) closeEditModal();
       if (commentsModal.classList.contains('active')) closeCommentsModal();
+      if (attachmentsModal.classList.contains('active')) closeAttachmentsModal();
       if (deleteModal.classList.contains('active')) closeDeleteModal();
     }
   });

@@ -317,7 +317,9 @@ body {
 .create-form input[type="text"],
 .create-form select,
 .modal-form input[type="text"],
-.modal-form select {
+.modal-form select,
+.attachment-form input[type="text"],
+.attachment-form input[type="url"] {
   font-family: inherit;
   font-size: 0.88rem;
   padding: 0.58rem 0.85rem;
@@ -887,7 +889,8 @@ body {
   cursor: default;
 }
 
-.card-comments-btn {
+.card-comments-btn,
+.card-attachments-btn {
   border: 0;
   padding: 0;
   background: transparent;
@@ -897,11 +900,13 @@ body {
 }
 
 .card-comments-btn:hover,
+.card-attachments-btn:hover,
 .card-comments-btn:focus-visible {
   color: var(--brand-accent);
 }
 
-.card-comments-btn:focus-visible {
+.card-comments-btn:focus-visible,
+.card-attachments-btn:focus-visible {
   outline: 2px solid var(--brand-accent);
   outline-offset: 3px;
 }
@@ -1046,6 +1051,146 @@ body {
   max-width: 600px;
 }
 
+.attachments-modal {
+  max-width: 660px;
+  max-height: calc(100vh - 2.5rem);
+  overflow-y: auto;
+}
+
+.attachment-task-description {
+  margin: -0.5rem 0 1rem;
+  color: var(--brand-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 24vh;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.attachment-empty {
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+  color: var(--brand-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+}
+
+.attachment-item-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.attachment-item-details a,
+.attachment-item-details span {
+  color: var(--brand-accent);
+  font-size: 0.84rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.attachment-item-details span {
+  color: var(--brand-dark);
+}
+
+.attachment-item-details small,
+.attachment-form small {
+  color: var(--brand-muted);
+  font-size: 0.72rem;
+}
+
+.attachment-delete-btn {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.attachment-delete-btn:hover {
+  background: #fee2e2;
+}
+
+.attachment-forms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.attachment-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.attachment-form .form-group {
+  gap: 0.35rem;
+}
+
+.attachment-form label {
+  font-size: 0.78rem;
+}
+
+.attachment-form input {
+  min-width: 0;
+}
+
+.attachment-form input[type="file"] {
+  padding: 0.45rem;
+  font-size: 0.76rem;
+}
+
+.attachment-form input[type="file"]::file-selector-button {
+  margin-right: 0.5rem;
+  padding: 0.35rem 0.55rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: #e2e8f0;
+  color: var(--brand-dark);
+  font: inherit;
+  cursor: pointer;
+}
+
+.attachment-form input[type="text"]:focus,
+.attachment-form input[type="url"]:focus {
+  background-color: var(--surface-white);
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.attachment-form .btn-primary {
+  align-self: flex-start;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.78rem;
+}
+
 .comments-task-title {
   margin: -0.45rem 0 1rem;
   color: var(--brand-muted);
@@ -1140,6 +1285,12 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   margin-top: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .attachment-forms {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-row-2 {
