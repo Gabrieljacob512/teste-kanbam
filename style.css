@@ -1044,16 +1044,6 @@ body {
   padding: 0.15rem 0.25rem 0.75rem 0;
 }
 
-.comments-empty {
-  margin: auto 0;
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  background: #f8fafc;
-  color: var(--brand-muted);
-  font-size: 0.84rem;
-  text-align: center;
-}
-
 .comment-item {
   padding: 0.8rem 0.95rem;
   border: 1px solid var(--border-subtle);
@@ -1081,6 +1071,48 @@ body {
   line-height: 1.5;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.comment-actions,
+.comment-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+}
+
+.comment-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--brand-accent);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.comment-actions button:hover {
+  text-decoration: underline;
+}
+
+.comment-actions .comment-delete-action {
+  color: #dc2626;
+}
+
+.comment-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.comment-edit-actions .btn-primary,
+.comment-edit-actions .btn-secondary {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
 }
 
 .comment-form {

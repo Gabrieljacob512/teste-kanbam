@@ -214,6 +214,7 @@ const commentTextInput = document.getElementById('commentText');
 const closeCommentsModalBtn = document.getElementById('closeCommentsModalBtn');
 const cancelCommentsBtn = document.getElementById('cancelCommentsBtn');
 let taskWithOpenCommentsId = null;
+let editingCommentId = null;
 
 // Componentes do modal de confirmação de exclusão (Delete)
 const deleteModal = document.getElementById('deleteModal');
@@ -803,14 +804,7 @@ function openCommentsModal(taskId) {
 function renderComments(task) {
   const comments = Array.isArray(task.comments) ? task.comments : [];
   if (comments.length === 0) {
-    const hasLegacyCount = (task.commentsCount || 0) > 0;
-    commentsList.innerHTML = `
-      <p class="comments-empty">
-        ${hasLegacyCount
-          ? 'Os comentários antigos possuem apenas um contador; o conteúdo não foi salvo. Adicione um comentário para iniciar o histórico.'
-          : 'Ainda não há comentários nesta tarefa.'}
-      </p>
-    `;
+    commentsList.innerHTML = '';
     return;
   }
 
@@ -819,13 +813,32 @@ function renderComments(task) {
     const dateLabel = Number.isNaN(date.getTime())
       ? ''
       : date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    const isEditing = comment.id === editingCommentId;
     return `
       <article class="comment-item">
         <div class="comment-meta">
           <strong>${escapeHtml(comment.author || 'Você')}</strong>
           <time>${escapeHtml(dateLabel)}</time>
         </div>
-        <p>${escapeHtml(comment.text)}</p>
+        ${isEditing ? `
+          <form class="comment-edit-form" data-comment-id="${escapeHtml(comment.id)}">
+            <textarea rows="3" maxlength="1000" required aria-label="Editar comentário">${escapeHtml(comment.text)}</textarea>
+            <div class="comment-edit-actions">
+              <button type="button" class="btn-secondary" data-comment-action="cancel-edit">Cancelar</button>
+              <button type="submit" class="btn-primary">Salvar</button>
+            </div>
+          </form>
+        ` : `
+          <p>${escapeHtml(comment.text)}</p>
+          <div class="comment-actions">
+            <button type="button" data-comment-action="edit" data-comment-id="${escapeHtml(comment.id)}" aria-label="Editar comentário">
+              <i class="fa-regular fa-pen-to-square"></i> Editar
+            </button>
+            <button type="button" class="comment-delete-action" data-comment-action="delete" data-comment-id="${escapeHtml(comment.id)}" aria-label="Excluir comentário">
+              <i class="fa-regular fa-trash-can"></i> Excluir
+            </button>
+          </div>
+        `}
       </article>
     `;
   }).join('');
@@ -837,6 +850,75 @@ function closeCommentsModal() {
   commentsModal.setAttribute('aria-hidden', 'true');
   commentForm.reset();
   taskWithOpenCommentsId = null;
+  editingCommentId = null;
+}
+
+function handleCommentListClick(e) {
+  const actionButton = e.target.closest('[data-comment-action]');
+  if (!actionButton) return;
+
+  const task = tasks.find(t => t.id === taskWithOpenCommentsId);
+  if (!task || !Array.isArray(task.comments)) return;
+
+  const action = actionButton.dataset.commentAction;
+  const commentId = actionButton.dataset.commentId;
+
+  if (action === 'cancel-edit') {
+    editingCommentId = null;
+    renderComments(task);
+    return;
+  }
+
+  const comment = task.comments.find(item => item.id === commentId);
+  if (!comment) {
+    showToast('Comentário não encontrado.', 'danger');
+    renderComments(task);
+    return;
+  }
+
+  if (action === 'edit') {
+    editingCommentId = comment.id;
+    renderComments(task);
+    commentsList.querySelector('.comment-edit-form textarea').focus();
+    return;
+  }
+
+  if (action === 'delete' && window.confirm('Tem certeza de que deseja excluir este comentário?')) {
+    task.comments = task.comments.filter(item => item.id !== commentId);
+    task.commentsCount = task.comments.length;
+    editingCommentId = null;
+    saveTasks();
+    renderComments(task);
+    renderBoard();
+    showToast('Comentário excluído.', 'success');
+  }
+}
+
+function handleEditComment(e) {
+  const form = e.target.closest('.comment-edit-form');
+  if (!form) return;
+  e.preventDefault();
+
+  const task = tasks.find(t => t.id === taskWithOpenCommentsId);
+  const comment = task?.comments?.find(item => item.id === form.dataset.commentId);
+  if (!task || !comment) {
+    showToast('Comentário não encontrado.', 'danger');
+    if (task) renderComments(task);
+    return;
+  }
+
+  const updatedText = form.querySelector('textarea').value.trim();
+  if (!updatedText) {
+    showToast('O comentário não pode ficar em branco.', 'danger');
+    form.querySelector('textarea').focus();
+    return;
+  }
+
+  comment.text = updatedText;
+  editingCommentId = null;
+  saveTasks();
+  renderComments(task);
+  showToast('Comentário atualizado.', 'success');
 }
 
 function handleAddComment(e) {
@@ -1033,6 +1115,8 @@ document.addEventListener('DOMContentLoaded', () => {
   commentForm.addEventListener('submit', handleAddComment);
   closeCommentsModalBtn.addEventListener('click', closeCommentsModal);
   cancelCommentsBtn.addEventListener('click', closeCommentsModal);
+  commentsList.addEventListener('click', handleCommentListClick);
+  commentsList.addEventListener('submit', handleEditComment);
 
   // Modal de Exclusão
   confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
