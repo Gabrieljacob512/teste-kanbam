@@ -330,11 +330,30 @@ body {
   width: 100%;
 }
 
+.create-form textarea, .modal-form textarea{
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 0.58rem 0.85rem;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: #f8fafc;
+  color: var(--brand-dark);
+  outline: none;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
 /* Efeito de foco acessível com anel de destaque (focus ring) */
 .create-form input[type="text"]:focus,
 .create-form select:focus,
 .modal-form input[type="text"]:focus,
 .modal-form select:focus {
+  background-color: var(--surface-white);
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.create-form textarea:focus, .modal-form textarea:focus{
   background-color: var(--surface-white);
   border-color: var(--brand-accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
