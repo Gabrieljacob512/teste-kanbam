@@ -29,6 +29,7 @@ const STORAGE_KEY = 'tecnosystem_kanban_tasks';
  * @typedef {Object} Task
  * @property {string} id - Identificador único alfanumérico da demanda.
  * @property {string} title - Título descritivo da tarefa.
+ * @property {string} description - Descrição da tarefa.
  * @property {('TI'|'RH'|'Financeiro'|'Operações')} department - Departamento encarregado.
  * @property {('Baixa'|'Média'|'Alta')} priority - Severidade de prioridade da demanda.
  * @property {number} columnId - Coluna do fluxo onde a demanda reside (1 a 5).
@@ -47,6 +48,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-1',
     title: 'Troca de Notebook - TI',
+    description: 'Um notebook encontra-se defeituoso, favor trocar o quanto antes!',
     department: 'TI',
     priority: 'Alta',
     columnId: 1, // Coluna 1: Backlog
@@ -58,6 +60,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-2',
     title: 'Admissão de Estagiário - RH',
+    description: 'Conferir a documentação enviada pelo candidato e finalizar o cadastro no sistema para início imediato.',
     department: 'RH',
     priority: 'Média',
     columnId: 2, // Coluna 2: Priorizado
@@ -69,6 +72,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-3',
     title: 'Aprovação de Reembolso - Financeiro',
+    description: 'Solicitação de reembolso de despesas de viagem aguardando validação do comprovante e liberação do pagamento.',
     department: 'Financeiro',
     priority: 'Alta',
     columnId: 2, // Coluna 2: Priorizado
@@ -80,6 +84,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-4',
     title: 'Revisão de SLA de Servidores - TI',
+    description: 'Analisar os indicadores de disponibilidade e tempo de resposta dos servidores para atualizar as metas de SLA.',
     department: 'TI',
     priority: 'Média',
     columnId: 3, // Coluna 3: Em Desenvolvimento
@@ -91,6 +96,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-5',
     title: 'Treinamento de Onboarding Q4 - Operações',
+    description: 'Revisar as apresentações e validar o cronograma de integração para os novos colaboradores do quarto trimestre.',
     department: 'Operações',
     priority: 'Baixa',
     columnId: 4, // Coluna 4: Teste / Validação
@@ -102,6 +108,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-6',
     title: 'Fechamento Mensal e Balanço - Financeiro',
+    description: 'Consolidação das movimentações financeiras, conciliação bancária e emissão dos relatórios contábeis do mês.',
     department: 'Financeiro',
     priority: 'Alta',
     columnId: 5, // Coluna 5: Finalizado
@@ -144,10 +151,11 @@ let tasks = [];
 let taskToDeleteId = null;
 
 /**
- * Filtro departamental atualmente ativo na barra de ferramentas ('all' exibe todos).
+ * Filtro departamental e de prioridade atualmente ativo na barra de ferramentas ('all' exibe todos).
  * @type {string}
  */
 let currentDeptFilter = 'all';
+let currentPriorityFilter = 'all';
 
 /**
  * Termo de busca textual aplicado em tempo real na listagem.
@@ -166,20 +174,21 @@ const totalTasksCountEl = document.getElementById('totalTasksCount');
 // Formulário superior de inclusão rápida de demandas (Create)
 const createTaskForm = document.getElementById('createTaskForm');
 const taskTitleInput = document.getElementById('taskTitleInput');
+const taskDescInput = document.getElementById('taskDescInput');
 const taskDeptSelect = document.getElementById('taskDeptSelect');
 const taskPrioritySelect = document.getElementById('taskPrioritySelect');
-const taskColumnSelect = document.getElementById('taskColumnSelect');
 
 // Barra de busca e filtros departamentais
 const searchInput = document.getElementById('searchInput');
-const clearSearchBtn = document.getElementById('clearSearchBtn');
-const filterPills = document.querySelectorAll('.filter-pill');
+const filterPills = document.querySelectorAll('.filter-pill[data-filter]');
+const priorityPills = document.querySelectorAll('.filter-pill[data-priority]');
 
 // Componentes do modal de edição de tarefas (Update)
 const editModal = document.getElementById('editModal');
 const editTaskForm = document.getElementById('editTaskForm');
 const editTaskIdInput = document.getElementById('editTaskId');
 const editTaskTitleInput = document.getElementById('editTaskTitle');
+const editTaskDescriptionInput = document.getElementById('editTaskDescription');
 const editTaskDeptSelect = document.getElementById('editTaskDept');
 const editTaskPrioritySelect = document.getElementById('editTaskPriority');
 const editTaskColumnSelect = document.getElementById('editTaskColumn');
@@ -354,17 +363,17 @@ function renderBoard() {
     }
   }
 
-  // Pipeline de filtragem: combina filtro por departamento e busca textual em múltiplos campos
-  const filteredTasks = tasks.filter(task => {
-    const matchesDept = (currentDeptFilter === 'all' || task.department === currentDeptFilter);
+   // Pipeline de filtragem: combina departamento, prioridade e busca textual
+  const filteredTasks = tasks.filter(task => {    const matchesDept = (currentDeptFilter === 'all' || task.department === currentDeptFilter);
+    const matchesPriority = (currentPriorityFilter === 'all' || task.priority === currentPriorityFilter);
     const query = currentSearchQuery.toLowerCase().trim();
     const matchesSearch = !query ||
       task.title.toLowerCase().includes(query) ||
       task.assigneeName.toLowerCase().includes(query) ||
-      task.department.toLowerCase().includes(query);
+      task.department.toLowerCase().includes(query) ||
+      task.priority.toLowerCase().includes(query);
 
-    return matchesDept && matchesSearch;
-  });
+    return matchesDept && matchesPriority && matchesSearch;});
 
   // Acumuladores de contagem de demandas por coluna
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -661,9 +670,10 @@ function handleCreateTask(e) {
   e.preventDefault();
 
   const title = taskTitleInput.value.trim();
+  const description = taskDescInput.value.trim();
   const department = taskDeptSelect.value;
   const priority = taskPrioritySelect.value;
-  const columnId = parseInt(taskColumnSelect.value, 10);
+  const columnId = 1; // Toda nova tarefa nasce no Backlog
 
   if (!title) {
     showToast('Por favor, informe o título da tarefa.', 'danger');
@@ -685,6 +695,7 @@ function handleCreateTask(e) {
   const newTask = {
     id: `task-${Date.now()}`,
     title: title,
+    description: description,
     department: department,
     priority: priority,
     columnId: columnId,
@@ -723,6 +734,7 @@ function openEditModal(taskId) {
 
   editTaskIdInput.value = task.id;
   editTaskTitleInput.value = task.title;
+  editTaskDescriptionInput.value = task.description;
   editTaskDeptSelect.value = task.department;
   editTaskPrioritySelect.value = task.priority;
   editTaskColumnSelect.value = task.columnId;
@@ -766,6 +778,7 @@ function handleSaveEdit(e) {
 
   const updatedTitle = editTaskTitleInput.value.trim();
   const updatedAssignee = editAssigneeNameInput.value.trim();
+  const updatedDescription = editTaskDescriptionInput.value.trim();
 
   if (!updatedTitle) {
     showToast('O título não pode estar em branco.', 'danger');
@@ -774,6 +787,7 @@ function handleSaveEdit(e) {
   }
 
   task.title = updatedTitle;
+  task.description = updatedDescription;
   task.department = editTaskDeptSelect.value;
   task.priority = editTaskPrioritySelect.value;
   task.columnId = parseInt(editTaskColumnSelect.value, 10);
@@ -871,11 +885,11 @@ function initFiltersAndSearch() {
   });
 
   // Pílulas de filtro de departamento
-  filterPills.forEach(pill => {
+  priorityPills.forEach(pill => {
     pill.addEventListener('click', () => {
-      filterPills.forEach(p => p.classList.remove('active'));
+      priorityPills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
-      currentDeptFilter = pill.getAttribute('data-filter');
+      currentPriorityFilter = pill.getAttribute('data-priority');
       renderBoard();
     });
   });

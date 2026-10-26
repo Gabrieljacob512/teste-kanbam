@@ -83,6 +83,18 @@
         >
       </div>
 
+      <div class="form-group form-group-description">
+  <label for="taskDescInput">
+    <i class="fa-solid fa-align-left"></i> Descrição
+  </label>
+  <textarea
+    id="taskDescInput"
+    rows="2"
+    placeholder="Descreva a demanda..."
+    required
+  ></textarea>
+</div>
+
       <div class="form-group">
         <label for="taskDeptSelect">
           <i class="fa-solid fa-building"></i> Departamento
@@ -106,18 +118,7 @@
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="taskColumnSelect">
-          <i class="fa-solid fa-table-columns"></i> Coluna Inicial
-        </label>
-        <select id="taskColumnSelect" required>
-          <option value="1" selected>Backlog</option>
-          <option value="2">Priorizado</option>
-          <option value="3">Em Desenvolvimento</option>
-          <option value="4">Teste / Validação</option>
-          <option value="5">Finalizado</option>
-        </select>
-      </div>
+      
 
       <div class="form-actions">
         <button type="submit" id="addTaskBtn" class="btn-primary">
@@ -146,6 +147,13 @@
       <button class="filter-pill" data-filter="RH">RH</button>
       <button class="filter-pill" data-filter="Financeiro">Financeiro</button>
       <button class="filter-pill" data-filter="Operações">Operações</button>
+    </div>
+        <div class="filter-group">
+      <span class="filter-label"><i class="fa-solid fa-flag"></i> Prioridade:</span>
+      <button class="filter-pill active" data-priority="all">Todas</button>
+      <button class="filter-pill" data-priority="Alta">Alta</button>
+      <button class="filter-pill" data-priority="Média">Média</button>
+      <button class="filter-pill" data-priority="Baixa">Baixa</button>
     </div>
   </div>
 
@@ -247,6 +255,11 @@
         <div class="form-group">
           <label for="editTaskTitle">Título da Demanda</label>
           <input type="text" id="editTaskTitle" required placeholder="Título descritivo da demanda...">
+        </div>
+
+        <div class="form-group">
+          <label for="editTaskDescription">Descrição da Demanda</label>
+          <textarea id="editTaskDescription" rows="2" required placeholder="Descrição da demanda..."></textarea>
         </div>
 
         <div class="form-row-2">
